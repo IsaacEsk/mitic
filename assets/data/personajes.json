@@ -1,0 +1,102 @@
+[
+  {
+    "id": "azteca_001",
+    "nombre_id": "azteca_nombre",
+    "descripcion_id": "azteca_desc",
+    "civilizacion_id": "azteca_civ",
+    "ataque": 55,
+    "vida": 300,
+    "costo_invocacion": 15,
+    "imagen": "assets/images/personajes/huitzilopochtli.png"
+  },
+  {
+    "id": "maya_001",
+    "nombre_id": "maya_nombre",
+    "descripcion_id": "maya_desc",
+    "civilizacion_id": "maya_civ",
+    "ataque": 50,
+    "vida": 280,
+    "costo_invocacion": 14,
+    "imagen": "assets/images/personajes/kukulkan.png"
+  },
+  {
+    "id": "romanos_001",
+    "nombre_id": "romanos_nombre",
+    "descripcion_id": "romanos_desc",
+    "civilizacion_id": "romanos_civ",
+    "ataque": 40,
+    "vida": 400,
+    "costo_invocacion": 12,
+    "imagen": "assets/images/personajes/gladiador.png"
+  },
+  {
+    "id": "egipcios_001",
+    "nombre_id": "egipcios_nombre",
+    "descripcion_id": "egipcios_desc",
+    "civilizacion_id": "egipcios_civ",
+    "ataque": 52,
+    "vida": 320,
+    "costo_invocacion": 15,
+    "imagen": "assets/images/personajes/anubis.png"
+  },
+  {
+    "id": "francia_001",
+    "nombre_id": "francia_nombre",
+    "descripcion_id": "francia_desc",
+    "civilizacion_id": "francia_civ",
+    "ataque": 38,
+    "vida": 350,
+    "costo_invocacion": 11,
+    "imagen": "assets/images/personajes/juana_de_arco.png"
+  },
+  {
+    "id": "jerusalen_001",
+    "nombre_id": "jerusalen_nombre",
+    "descripcion_id": "jerusalen_desc",
+    "civilizacion_id": "jerusalen_civ",
+    "ataque": 42,
+    "vida": 380,
+    "costo_invocacion": 12,
+    "imagen": "assets/images/personajes/templario.png"
+  },
+  {
+    "id": "sarracenos_001",
+    "nombre_id": "sarracenos_nombre",
+    "descripcion_id": "sarracenos_desc",
+    "civilizacion_id": "sarracenos_civ",
+    "ataque": 44,
+    "vida": 360,
+    "costo_invocacion": 12,
+    "imagen": "assets/images/personajes/saladino.png"
+  },
+  {
+    "id": "india_001",
+    "nombre_id": "india_nombre",
+    "descripcion_id": "india_desc",
+    "civilizacion_id": "india_civ",
+    "ataque": 48,
+    "vida": 340,
+    "costo_invocacion": 14,
+    "imagen": "assets/images/personajes/ganesha.png"
+  },
+  {
+    "id": "china_001",
+    "nombre_id": "china_nombre",
+    "descripcion_id": "china_desc",
+    "civilizacion_id": "china_civ",
+    "ataque": 35,
+    "vida": 420,
+    "costo_invocacion": 10,
+    "imagen": "assets/images/personajes/terracota.png"
+  },
+  {
+    "id": "japon_001",
+    "nombre_id": "japon_nombre",
+    "descripcion_id": "japon_desc",
+    "civilizacion_id": "japon_civ",
+    "ataque": 45,
+    "vida": 370,
+    "costo_invocacion": 13,
+    "imagen": "assets/images/personajes/samurai.png"
+  }
+]

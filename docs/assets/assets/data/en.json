@@ -1,0 +1,63 @@
+{
+  "azteca_nombre": "Huitzilopochtli",
+  "azteca_desc": "God of war and sun. Guide of the Aztec people on their pilgrimage from Aztlán. His birth and daily sacrifices ensure the sun's victory over the moon and stars.",
+  "azteca_civ": "Aztec",
+
+  "maya_nombre": "Kukulkan",
+  "maya_desc": "The feathered serpent, god of wind, rain and wisdom. He brought knowledge, writing and calendars to the Mayans. His descent marks the equinox at Chichén Itzá.",
+  "maya_civ": "Mayan",
+
+  "romanos_nombre": "Gladiator",
+  "romanos_desc": "Fighter of Roman amphitheaters. Trained for hand-to-hand combat, his endurance and courage entertained the masses while seeking freedom in the Colosseum arena.",
+  "romanos_civ": "Roman",
+
+  "egipcios_nombre": "Anubis",
+  "egipcios_desc": "God of death and the afterlife. With the head of a jackal, he guided the souls of the deceased to the final judgment and protected the tombs. His cult ensured a correct transition to the other world.",
+  "egipcios_civ": "Egyptian",
+
+  "francia_nombre": "Joan of Arc",
+  "francia_desc": "French heroine and saint. Guided by divine visions, she led the French army in the Hundred Years' War, lifting the siege of Orléans and allowing the coronation of King Charles VII.",
+  "francia_civ": "France",
+
+  "jerusalen_nombre": "Knights Templar",
+  "jerusalen_desc": "Warrior monk of the Order of the Temple. He defended the holy places and protected pilgrims in the Holy Land. His vow of poverty, chastity and obedience made them fearsome in battle.",
+  "jerusalen_civ": "Jerusalem",
+
+  "sarracenos_nombre": "Saladin",
+  "sarracenos_desc": "Sultan of Egypt and Syria, Muslim leader during the Crusades. He reconquered Jerusalem and was admired even by his enemies for his chivalry, wisdom and ability to unify the Islamic world.",
+  "sarracenos_civ": "Saracen",
+
+  "india_nombre": "Ganesha",
+  "india_desc": "Elephant-headed god, son of Shiva and Parvati. Lord of wisdom, intelligence and remover of obstacles. He is invoked at the beginning of any important enterprise or ceremony.",
+  "india_civ": "India",
+
+  "china_nombre": "Terracotta Warrior",
+  "china_desc": "Army of thousands of clay soldiers created to protect Emperor Qin Shi Huang in his afterlife. Each figure is unique, with real armor and weapons, representing the collective strength of China.",
+  "china_civ": "China",
+
+  "japon_nombre": "Samurai",
+  "japon_desc": "Japanese feudal warrior who followed the Bushido code: loyalty, honor and discipline. Expert in the use of the katana, he served his lord with devotion and practiced martial arts and meditation.",
+  "japon_civ": "Japan",
+
+"muralla_azteca_desc": "Ceremonial and spiritual center of the Mexica capital. From here, Huitzilopochtli guides his people.",
+  "muralla_maya_desc": "The pyramid of Kukulkan, where the feathered serpent descends each equinox.",
+  "muralla_romanos_desc": "The largest amphitheater of the Roman Empire, witness to countless gladiator battles.",
+  "muralla_egipcios_desc": "Monumental tombs guarding the secrets of the pharaohs and their journey to the afterlife.",
+  "muralla_francia_desc": "The iron symbol of Paris, witness to revolutions and dreams of freedom.",
+  "muralla_jerusalen_desc": "Ancient walls that have protected one of the world's holiest cities.",
+  "muralla_sarracenos_desc": "Place of prayer and gathering, where Saladin united his people.",
+  "muralla_india_desc": "White marble mausoleum, symbol of eternal love and Mughal architecture.",
+  "muralla_china_desc": "Thousands of kilometers of stone and sacrifice that protected the empire from the north.",
+  "muralla_japon_desc": "Japanese fortress that resisted invasions and witnessed the honor of the samurai.",
+
+  "habilidad_azteca": "When you improve attack, gain +5 additional attack",
+  "habilidad_maya": "When you heal life, gain +5 additional life",
+  "habilidad_romanos": "While the Colosseum has more than 500 life, your warriors gain +5 attack",
+  "habilidad_egipcios": "If you roll doubles, the Pyramids gain +50 life",
+  "habilidad_francia": "Every 3 turns, you can reroll one dice",
+  "habilidad_jerusalen": "When you rebuild your wall, gain +5 additional life",
+  "habilidad_sarracenos": "Your warriors deal 5% more damage when attacking monuments",
+  "habilidad_india": "At the start of your turn, all your warriors gain +5 life",
+  "habilidad_china": "You can summon 4 warriors on the field (instead of 3)",
+  "habilidad_japon": "If you roll doubles, add the points and roll again"
+}

@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
       //home: const SelectCivScreen(), // <--- aquí va tu screen
-      //home: const TableroScreen(), // <--- Solo para probar el diseño
+      home: const TableroScreen(), // <--- Solo para probar el diseño
     );
   }
 }

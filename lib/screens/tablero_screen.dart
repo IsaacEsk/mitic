@@ -11,6 +11,8 @@ import '../models/civilizacion_model.dart';
 import '../models/monument_model.dart';
 import '../models/guerrero_field_model.dart';
 import '../ia/ia_controller.dart';
+import '../services/guerrero_service.dart';
+import '../services/civilizacion_service.dart';
 
 class TableroScreen extends StatefulWidget {
   const TableroScreen({super.key});
@@ -34,7 +36,9 @@ class _TableroScreenState extends State<TableroScreen> {
   @override
   void initState() {
     super.initState();
-    _inicializarJuegoDePrueba();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _inicializarJuegoDePrueba();
+    });
   }
 
   @override
@@ -452,179 +456,93 @@ class _TableroScreenState extends State<TableroScreen> {
     );
   }
 
-  void _inicializarJuegoDePrueba() {
-    // ============================================
-    // CREAR GUERREROS BASE (simulando JSON)
-    // ============================================
-    final huitzilopochtli = Guerrero(
-      id: 'azteca_001',
-      nombreId: 'azteca_nombre',
-      descripcionId: 'azteca_desc',
-      civilizacionId: 'azteca_civ',
-      ataque: 55,
-      vida: 300,
-      costoInvocacion: 15,
-      imagen: 'assets/images/personajes/huitzilopochtli.png',
-    );
+  Future<void> _inicializarJuegoDePrueba() async {
+    try {
+      // ============================================
+      // 1. CARGAR DATOS DE LOS JSON
+      // ============================================
+      final guerreros = await GuerreroService.loadGuerreros();
+      final civilizaciones = await CivilizacionService.loadCivilizaciones();
+      final translations = await GuerreroService.loadTranslations('es');
 
-    final kukulkan = Guerrero(
-      id: 'maya_001',
-      nombreId: 'maya_nombre',
-      descripcionId: 'maya_desc',
-      civilizacionId: 'maya_civ',
-      ataque: 50,
-      vida: 280,
-      costoInvocacion: 14,
-      imagen: 'assets/images/personajes/kukulkan.png',
-    );
+      // ============================================
+      // 2. BUSCAR GUERREROS POR ID
+      // ============================================
+      final huitzilopochtli = guerreros.firstWhere((g) => g.id == 'azteca_001');
+      final kukulkan = guerreros.firstWhere((g) => g.id == 'maya_001');
+      final terracota = guerreros.firstWhere((g) => g.id == 'china_001');
+      final gladiador = guerreros.firstWhere((g) => g.id == 'romanos_001');
+      final juana = guerreros.firstWhere((g) => g.id == 'francia_001');
+      final templario = guerreros.firstWhere((g) => g.id == 'jerusalen_001');
 
-    final terracota = Guerrero(
-      id: 'china_001',
-      nombreId: 'china_nombre',
-      descripcionId: 'china_desc',
-      civilizacionId: 'china_civ',
-      ataque: 35,
-      vida: 420,
-      costoInvocacion: 10,
-      imagen: 'assets/images/personajes/terracota.png',
-    );
+      // ============================================
+      // 3. BUSCAR CIVILIZACIONES
+      // ============================================
+      final azteca = civilizaciones.firstWhere((c) => c.id == 'azteca');
+      final maya = civilizaciones.firstWhere((c) => c.id == 'maya');
 
-    final gladiador = Guerrero(
-      id: 'romanos_001',
-      nombreId: 'romanos_nombre',
-      descripcionId: 'romanos_desc',
-      civilizacionId: 'romanos_civ',
-      ataque: 40,
-      vida: 400,
-      costoInvocacion: 12,
-      imagen: 'assets/images/personajes/gladiador.png',
-    );
+      // ============================================
+      // 4. CREAR JUGADOR 1 (TÚ)
+      // ============================================
+      final int espacios = (azteca.id == 'china') ? 4 : 3;
+      final jugador1 = Jugador(
+        civilizacion: azteca,
+        guerrerosSeleccionados: [
+          huitzilopochtli,
+          kukulkan,
+          terracota,
+          gladiador,
+        ],
+        monumentoEnCampo: MonumentField.fromCivilizacion(azteca),
+        guerrerosEnCampo: List.generate(
+          espacios,
+          (index) => GuerreroField.vacio(posicion: index),
+        ),
+        puntosAcumulados: 0,
+        turno: 0,
+        yaAtacoEsteTurno: false,
+        guerrerosEnMano: [terracota, gladiador, huitzilopochtli, kukulkan],
+      );
 
-    final juana = Guerrero(
-      id: 'francia_001',
-      nombreId: 'francia_nombre',
-      descripcionId: 'francia_desc',
-      civilizacionId: 'francia_civ',
-      ataque: 38,
-      vida: 350,
-      costoInvocacion: 11,
-      imagen: 'assets/images/personajes/juana_de_arco.png',
-    );
+      // ============================================
+      // 5. CREAR JUGADOR 2 (ENEMIGO)
+      // ============================================
+      final int espacios2 = (maya.id == 'china') ? 4 : 3;
 
-    final templario = Guerrero(
-      id: 'jerusalen_001',
-      nombreId: 'jerusalen_nombre',
-      descripcionId: 'jerusalen_desc',
-      civilizacionId: 'jerusalen_civ',
-      ataque: 42,
-      vida: 380,
-      costoInvocacion: 12,
-      imagen: 'assets/images/personajes/templario.png',
-    );
-
-    // ============================================
-    // CREAR CIVILIZACIONES
-    // ============================================
-    final azteca = Civilizacion(
-      id: 'azteca',
-      nombre: 'Aztecas',
-      muralla: Muralla(
-        nombre: 'Templo Mayor',
-        vida: 750,
-        imagen: 'assets/images/monumentos/templo_mayor.png',
-        descripcionId: 'muralla_azteca_desc',
-      ),
-      habilidadEspecialId: 'habilidad_azteca',
-    );
-
-    final maya = Civilizacion(
-      id: 'maya',
-      nombre: 'Mayas',
-      muralla: Muralla(
-        nombre: 'Chichén Itzá',
-        vida: 750,
-        imagen: 'assets/images/monumentos/chichen_itza.png',
-        descripcionId: 'muralla_maya_desc',
-      ),
-      habilidadEspecialId: 'habilidad_maya',
-    );
-
-    // ============================================
-    // CREAR JUGADOR 1 (TÚ)
-    // ============================================
-    final int espacios = (azteca.id == 'china') ? 4 : 3;
-    final jugador1 = Jugador(
-      civilizacion: azteca,
-      guerrerosSeleccionados: [huitzilopochtli, kukulkan, terracota, gladiador],
-      monumentoEnCampo: MonumentField.fromCivilizacion(azteca),
-
-      guerrerosEnCampo: List.generate(
-        espacios,
-        (index) => GuerreroField.vacio(posicion: index),
-      ),
-      puntosAcumulados: 0,
-      turno: 0,
-      yaAtacoEsteTurno: false,
-      guerrerosEnMano: [
-        terracota,
-        gladiador,
-        huitzilopochtli,
-        kukulkan,
-      ], // Los que no ha invocado
-    );
-
-    // ============================================
-    // CREAR JUGADOR 2 (ENEMIGO)
-    // ============================================
-    // ============================================
-    // CREAR JUGADOR 2 (ENEMIGO) - CON 2 GUERREROS
-    // ============================================
-    final int espacios2 = (maya.id == 'china') ? 4 : 3;
-
-    // Crear la lista de guerreros en campo
-    final List<GuerreroField> campoEnemigo = List.generate(espacios2, (index) {
-      // Si es el primer espacio, poner a Kukulkán
-      if (index == 0) {
-        return GuerreroField(
-          guerreroBase: kukulkan,
-          vidaActual: kukulkan.vida,
-          ataqueActual: kukulkan.ataque,
-          posicion: index,
-        );
-      }
-      //Si es el segundo espacio, poner a Templario
-      else if (index == 1) {
-        return GuerreroField(
-          guerreroBase: templario,
-          vidaActual: templario.vida,
-          ataqueActual: templario.ataque,
-          posicion: index,
-        );
-      }
-      // Los demás espacios vacíos
-      else {
+      // Crear campo con 2 guerreros
+      final List<GuerreroField> campoEnemigo = List.generate(espacios2, (
+        index,
+      ) {
         return GuerreroField.vacio(posicion: index);
-      }
-    });
+      });
 
-    final jugador2 = Jugador(
-      civilizacion: maya,
-      guerrerosSeleccionados: [kukulkan, templario, juana, terracota],
-      monumentoEnCampo: MonumentField.fromCivilizacion(maya),
-      //guerrerosEnCampo: campoEnemigo, // <-- AHORA TIENE 2 GUERREROS
-      guerrerosEnCampo: List.generate(
-        espacios,
-        (index) => GuerreroField.vacio(posicion: index),
-      ),
-      puntosAcumulados: 0,
-      turno: 1,
-      yaAtacoEsteTurno: false,
-      guerrerosEnMano: [juana, terracota], // Los que no están en campo
-    );
-    // ============================================
-    // CREAR EL JUEGO
-    // ============================================
-    juego = Juego(jugadores: [jugador1, jugador2], turnoActual: 0, fase: 0);
+      final jugador2 = Jugador(
+        civilizacion: maya,
+        guerrerosSeleccionados: [kukulkan, templario, juana, terracota],
+        monumentoEnCampo: MonumentField.fromCivilizacion(maya),
+        guerrerosEnCampo: campoEnemigo, // <-- AHORA CON 2 GUERREROS
+        puntosAcumulados: 0,
+        turno: 1,
+        yaAtacoEsteTurno: false,
+        guerrerosEnMano: [
+          juana,
+          terracota,
+          kukulkan,
+          templario,
+        ], // Los que no están en campo
+      );
+
+      // ============================================
+      // 6. CREAR EL JUEGO
+      // ============================================
+      setState(() {
+        juego = Juego(jugadores: [jugador1, jugador2], turnoActual: 0, fase: 0);
+      });
+
+      print('✅ Juego inicializado con datos del JSON');
+    } catch (e) {
+      print('❌ Error cargando datos: $e');
+    }
   }
 
   void _mostrarModalPuntos({
@@ -668,7 +586,7 @@ class _TableroScreenState extends State<TableroScreen> {
       return;
     }
 
-    double _valorSlider = 0;
+    double _valorSlider = 1;
 
     showDialog(
       context: context,
@@ -723,7 +641,7 @@ class _TableroScreenState extends State<TableroScreen> {
                   const SizedBox(height: 16),
                   Slider(
                     value: _valorSlider,
-                    min: 0,
+                    min: 1,
                     max: puntosDisponibles.toDouble(),
                     divisions: puntosDisponibles,
                     activeColor: color,
@@ -778,7 +696,7 @@ class _TableroScreenState extends State<TableroScreen> {
                       _modoActual = ModoAccion.normal;
                       _guerreroSeleccionado = null;
                     });
-                    _cambiarTurno();
+                    //_cambiarTurno();
                     // Mensaje de éxito
                     String mensaje;
                     if (modo == ModoAccion.reconstruir) {
@@ -2015,30 +1933,20 @@ class _TableroScreenState extends State<TableroScreen> {
   }
 
   void _tomarDecisionIA() {
-    // Primero, verificar si la IA tiene guerreros para atacar
-    final atacantes =
-        juego.jugadores[1].guerrerosEnCampo
-            .where((g) => !g.yaAtacoEsteTurno && g.guerreroBase.id.isNotEmpty)
-            .toList();
+    final ia = IAController(
+      yo: juego.jugadores[1],
+      enemigo: juego.jugadores[0],
+      onInvocar: (guerrero) => _invocarIA(guerrero),
+      onAtacar: (atacante, objetivo) => _atacarIA(atacante, objetivo),
+      onAtacarMultiple:
+          (atacantes) => _ejecutarAtaqueMultipleIA(atacantes, 0), // NUEVO
+      onReconstruir: (puntos) => _reconstruirIA(puntos),
+      onCurar: (guerrero, puntos) => _curarIA(guerrero, puntos),
+      onMejorar: (guerrero, puntos) => _mejorarIA(guerrero, puntos),
+      onPasarTurno: () => _cambiarTurno(),
+    );
 
-    if (atacantes.isNotEmpty) {
-      // Si tiene atacantes, ejecutar ataque múltiple
-      _ejecutarAtaqueMultipleIA(atacantes, 0);
-    } else {
-      // Si no tiene atacantes, usar la IA normal para otras acciones
-      final ia = IAController(
-        yo: juego.jugadores[1],
-        enemigo: juego.jugadores[0],
-        onInvocar: (guerrero) => _invocarIA(guerrero),
-        onAtacar: (atacante, objetivo) => _atacarIA(atacante, objetivo),
-        onReconstruir: (puntos) => _reconstruirIA(puntos),
-        onCurar: (guerrero, puntos) => _curarIA(guerrero, puntos),
-        onMejorar: (guerrero, puntos) => _mejorarIA(guerrero, puntos),
-        onPasarTurno: () => _cambiarTurno(),
-      );
-
-      ia.tomarDecision();
-    }
+    ia.tomarDecision();
   }
 
   void _ejecutarAtaqueMultipleIA(List<GuerreroField> atacantes, int index) {
@@ -2186,7 +2094,7 @@ class _TableroScreenState extends State<TableroScreen> {
       jugadorIA.monumentoEnCampo.vidaActual += puntos;
       jugadorIA.puntosAcumulados -= puntos;
     });
-    _cambiarTurno();
+    //_cambiarTurno();
   }
 
   void _curarIA(GuerreroField guerrero, int puntos) {
@@ -2194,7 +2102,7 @@ class _TableroScreenState extends State<TableroScreen> {
       guerrero.vidaActual += puntos;
       juego.jugadores[1].puntosAcumulados -= puntos;
     });
-    _cambiarTurno();
+    //_cambiarTurno();
   }
 
   void _mejorarIA(GuerreroField guerrero, int puntos) {
@@ -2202,7 +2110,7 @@ class _TableroScreenState extends State<TableroScreen> {
       guerrero.ataqueActual += puntos;
       juego.jugadores[1].puntosAcumulados -= puntos;
     });
-    _cambiarTurno();
+    //_cambiarTurno();
   }
 
   void _ejecutarIA() {

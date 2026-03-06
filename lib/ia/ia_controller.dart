@@ -10,7 +10,7 @@ class IAController {
   final Jugador enemigo; // El humano (jugador 0)
   final Random random = Random();
 
-  // Callbacks para ejecutar acciones en el tablero
+  // Callbacks para ejecutar acciones
   final Function(Guerrero guerrero) onInvocar;
   final Function(GuerreroField atacante, dynamic objetivo) onAtacar;
   final Function(int puntos) onReconstruir;
@@ -18,11 +18,14 @@ class IAController {
   final Function(GuerreroField guerrero, int puntos) onMejorar;
   final Function() onPasarTurno;
 
+  final Function(List<GuerreroField> atacantes) onAtacarMultiple; // NUEVO
+
   IAController({
     required this.yo,
     required this.enemigo,
     required this.onInvocar,
     required this.onAtacar,
+    required this.onAtacarMultiple, // NUEVO
     required this.onReconstruir,
     required this.onCurar,
     required this.onMejorar,
@@ -35,156 +38,394 @@ class IAController {
   void tomarDecision() {
     print('🤖 IA analizando situación...');
 
-    // 1. Verificar si puede invocar a su principal
-    if (_puedeInvocarPrincipal()) {
-      _invocarPrincipal();
+    // ============================================
+    // PASO 1: Obtener información del tablero
+    // ============================================
+    final enemigosVivos = _getEnemigosVivos();
+    final misGuerreros = _getMisGuerreros();
+    final atacantesDisponibles = _getAtacantesDisponibles();
+
+    // ============================================
+    // PASO 2: ¿OPORTUNIDAD DE ORO?
+    // ============================================
+    if (_oportunidadDeOro(enemigosVivos, atacantesDisponibles, misGuerreros)) {
+      // La función ya ejecuta todo (mejorar + atacar)
       return;
     }
 
-    // 2. Verificar si necesita invocar (menos de 2 guerreros)
-    if (_necesitaInvocar()) {
-      _invocarMejorDisponible();
+    // ============================================
+    // PASO 3: ¿Monumento en riesgo?
+    // ============================================
+    if (_monumentoEnRiesgo(enemigosVivos)) {
+      print('🤖 ¡Monumento en riesgo! Reconstruyendo con todos los puntos');
+      _reconstruirConTodosLosPuntos();
+      _atacarConTodos(atacantesDisponibles);
       return;
     }
 
-    // 3. Verificar si puede atacar
-    if (_puedeAtacar()) {
-      _atacar();
+    // ============================================
+    // PASO 4: Si NO HAY GUERREROS, solo invocar
+    // ============================================
+    if (misGuerreros.isEmpty) {
+      print('🤖 No hay guerreros en campo, intentando invocar');
+
+      if (!_intentarInvocar()) {
+        print('🤖 No pudo invocar y no hay guerreros, pasando turno');
+        onPasarTurno();
+      }
       return;
     }
 
-    // 4. Verificar si necesita reconstruir
-    if (_necesitaReconstruir()) {
-      _reconstruir();
-      return;
-    }
+    // ============================================
+    // PASO 5: YA HAY GUERREROS - Random para decidir
+    // ============================================
+    final random = Random().nextInt(100);
 
-    // 5. Verificar si necesita curar
-    if (_necesitaCurar()) {
-      _curar();
-      return;
-    }
+    if (random < 40) {
+      print('🤖 Random <40: Mejorando guerrero');
+      _hacerMejoras(misGuerreros);
+      final nuevosAtacantes = _getAtacantesDisponibles();
+      _atacarConTodos(nuevosAtacantes);
+    } else {
+      print('🤖 Random >=40: Intentando invocar');
 
-    // 6. Si nada, pasa turno
-    print('🤖 IA no encuentra acción útil, pasa turno');
-    onPasarTurno();
+      if (!_intentarInvocar()) {
+        print('🤖 No invocó, atacando');
+        final nuevosAtacantes = _getAtacantesDisponibles();
+        _atacarConTodos(nuevosAtacantes);
+      }
+    }
   }
 
-  // ============================================
-  // FUNCIONES DE VERIFICACIÓN
-  // ============================================
-  bool _puedeInvocarPrincipal() {
+  List<GuerreroField> _getEnemigosVivos() {
+    return enemigo.guerrerosEnCampo
+        .where((g) => g.guerreroBase.id.isNotEmpty)
+        .toList();
+  }
+
+  List<GuerreroField> _getMisGuerreros() {
+    return yo.guerrerosEnCampo
+        .where((g) => g.guerreroBase.id.isNotEmpty)
+        .toList();
+  }
+
+  List<GuerreroField> _getAtacantesDisponibles() {
+    return yo.guerrerosEnCampo
+        .where((g) => g.guerreroBase.id.isNotEmpty && !g.yaAtacoEsteTurno)
+        .toList();
+  }
+
+  bool _monumentoEnRiesgo(List<GuerreroField> enemigosVivos) {
+    final ataqueEnemigoTotal = enemigosVivos.fold(
+      0,
+      (sum, g) => sum + g.ataqueActual,
+    );
+    return ataqueEnemigoTotal > yo.monumentoEnCampo.vidaActual;
+  }
+
+  void _reconstruirConTodosLosPuntos() {
+    if (yo.puntosAcumulados > 0) {
+      onReconstruir(yo.puntosAcumulados);
+    }
+  }
+
+  void _atacarConTodos(List<GuerreroField> atacantes) {
+    if (atacantes.isNotEmpty) {
+      onAtacarMultiple(atacantes);
+    } else {
+      print('🤖 No hay atacantes, pasando turno');
+      onPasarTurno();
+    }
+  }
+
+  void _hacerMejoras(List<GuerreroField> misGuerreros) {
+    if (misGuerreros.isEmpty || yo.puntosAcumulados <= 0) {
+      print('🤖 No hay guerreros o puntos para mejorar');
+      return;
+    }
+
+    // ============================================
+    // PASO 1: ELEGIR UN GUERRERO AL AZAR
+    // ============================================
+    misGuerreros.shuffle(); // Desordena la lista
+    final elegido = misGuerreros.first; // Toma el primero (ahora aleatorio)
+
+    print('🤖 Guerrero elegido al azar: ${elegido.guerreroBase.nombreId}');
+
+    // ============================================
+    // PASO 2: DECIDIR CUÁNTOS PUNTOS USAR
+    // ============================================
+    // Mínimo 1, máximo todos los puntos disponibles
+    int maxPuntos = yo.puntosAcumulados;
+    int puntosUsar = Random().nextInt(maxPuntos) + 1; // 1 a maxPuntos
+
+    print('🤖 Usando $puntosUsar de $maxPuntos puntos disponibles');
+
+    // ============================================
+    // PASO 3: DECIDIR CÓMO REPARTIR (ataque/vida)
+    // ============================================
+    int puntosAtaque = 0;
+    int puntosVida = 0;
+
+    // 70% de probabilidad de mejorar ataque (lo más común)
+    // 30% de probabilidad de mejorar vida (más defensivo)
+    if (Random().nextInt(100) < 70) {
+      // Mejorar ataque
+      puntosAtaque = puntosUsar;
+      print('🤖 Enfocando en ATAQUE');
+    } else {
+      // Mejorar vida
+      puntosVida = puntosUsar;
+      print('🤖 Enfocando en VIDA');
+    }
+
+    // EXTRA: 10% de probabilidad de repartir mitad y mitad
+    if (Random().nextInt(100) < 10 && puntosUsar > 1) {
+      puntosAtaque = puntosUsar ~/ 2;
+      puntosVida = puntosUsar - puntosAtaque;
+      print('🤖 REPARTIENDO: $puntosAtaque ataque / $puntosVida vida');
+    }
+
+    // ============================================
+    // PASO 4: APLICAR MEJORAS
+    // ============================================
+    if (puntosAtaque > 0) {
+      print(
+        '🤖 Mejorando ATAQUE de ${elegido.guerreroBase.nombreId} +$puntosAtaque',
+      );
+      onMejorar(elegido, puntosAtaque); // Asumo que onMejorar es para ataque
+    }
+
+    if (puntosVida > 0) {
+      print(
+        '🤖 Mejorando VIDA de ${elegido.guerreroBase.nombreId} +$puntosVida',
+      );
+      // Si tienes una función separada para curar, úsala aquí
+      // onCurar(elegido, puntosVida);
+    }
+  }
+
+  bool _hayGuerreroEnRiesgo(
+    List<GuerreroField> misGuerreros,
+    List<GuerreroField> enemigosVivos,
+  ) {
+    if (enemigosVivos.isEmpty) return false;
+
+    // Calcular ataque total enemigo
+    final ataqueEnemigoTotal = enemigosVivos.fold(
+      0,
+      (sum, g) => sum + g.ataqueActual,
+    );
+
+    // Buscar guerreros dopados (ataque > base × 1.5)
+    final guerrerosDopados =
+        misGuerreros.where((g) {
+          final ataqueBase = g.guerreroBase.ataque;
+          return g.ataqueActual > ataqueBase * 1.5;
+        }).toList();
+
+    if (guerrerosDopados.isEmpty) return false;
+
+    // Verificar si alguno está en riesgo de muerte
+    for (var guerrero in guerrerosDopados) {
+      if (guerrero.vidaActual < ataqueEnemigoTotal) {
+        print(
+          '🤖 Guerrero dopado en riesgo: ${guerrero.guerreroBase.nombreId}',
+        );
+        print(
+          '🤖 Vida: ${guerrero.vidaActual}, Ataque enemigo: $ataqueEnemigoTotal',
+        );
+
+        // Calcular puntos necesarios para sobrevivir
+        final puntosNecesarios = ataqueEnemigoTotal - guerrero.vidaActual + 1;
+
+        if (yo.puntosAcumulados >= puntosNecesarios) {
+          print('🤖 CURANDO para salvar al guerrero');
+          onCurar(guerrero, puntosNecesarios);
+          return true;
+        } else {
+          print('🤖 No alcanzan puntos para curarlo :(');
+        }
+      }
+    }
+
+    return false;
+  }
+
+  bool _oportunidadDeOro(
+    List<GuerreroField> enemigosVivos,
+    List<GuerreroField> atacantes,
+    List<GuerreroField> misGuerreros,
+  ) {
+    if (enemigosVivos.isNotEmpty) return false;
+
+    print('🤖 🥇 ¡OPORTUNIDAD DE ORO! Enemigo sin guerreros');
+
+    if (atacantes.isEmpty) {
+      print('🤖 No tengo guerreros para atacar el monumento');
+      return false;
+    }
+
+    // ============================================
+    // PASO 1: MEJORAR ATAQUE CON TODOS LOS PUNTOS
+    // ============================================
+    if (yo.puntosAcumulados > 0 && misGuerreros.isNotEmpty) {
+      print('🤖 Potenciando ataque con ${yo.puntosAcumulados} puntos');
+
+      // Elegir al guerrero con más ataque (para hacerlo aún más letal)
+      misGuerreros.sort((a, b) => b.ataqueActual.compareTo(a.ataqueActual));
+      final mejor = misGuerreros.first;
+
+      // Usar TODOS los puntos en mejora
+      onMejorar(mejor, yo.puntosAcumulados);
+
+      // Nota: mejorar no termina el turno, podemos seguir
+    }
+
+    // ============================================
+    // PASO 2: ATACAR MONUMENTO CON TODO
+    // ============================================
+    print(
+      '🤖 ATACANDO MONUMENTO con ${atacantes.length} guerreros (potenciados)',
+    );
+
+    // Obtener lista actualizada de atacantes (por si mejoró)
+    final atacantesActualizados = _getAtacantesDisponibles();
+    onAtacarMultiple(atacantesActualizados);
+
+    return true;
+  }
+
+  bool _intentarInvocar() {
+    final espaciosLibres =
+        yo.guerrerosEnCampo.where((g) => g.guerreroBase.id.isEmpty).length;
+
+    if (espaciosLibres == 0) {
+      print('🤖 No hay espacios libres');
+      return false;
+    }
+
+    print('🤖 Hay espacios libres, intentando invocar...');
+
     final principalId = '${yo.civilizacion.id}_001';
-    final principalEnMano = yo.guerrerosEnMano.any((g) => g.id == principalId);
-    final principalEnCampo = yo.guerrerosEnCampo.any(
+    final tengoPrincipalEnCampo = yo.guerrerosEnCampo.any(
       (g) => g.guerreroBase.id == principalId,
     );
 
-    return principalEnMano && !principalEnCampo && yo.puntosAcumulados >= 12;
+    // Caso: Principal no está en campo
+    if (!tengoPrincipalEnCampo) {
+      return _intentarInvocarPrincipal(principalId);
+    }
+
+    // Caso: Principal ya está en campo, invocar aliados
+    return _intentarInvocarAliado(principalId);
   }
 
-  bool _necesitaInvocar() {
-    final guerrerosEnCampo =
-        yo.guerrerosEnCampo.where((g) => g.guerreroBase.id.isNotEmpty).length;
-    return guerrerosEnCampo < 2 &&
-        yo.guerrerosEnMano.isNotEmpty &&
-        yo.puntosAcumulados >= 10;
-  }
+  bool _intentarInvocarPrincipal(String principalId) {
+    print('🤖 El principal NO está en el campo');
 
-  bool _puedeAtacar() {
-    return yo.guerrerosEnCampo.any(
-      (g) => !g.yaAtacoEsteTurno && g.guerreroBase.id.isNotEmpty,
+    final principalEnMano = yo.guerrerosEnMano.any((g) => g.id == principalId);
+
+    if (!principalEnMano) {
+      print('🤖 Principal no encontrado en la mano');
+      return false;
+    }
+
+    final guerreroPrincipal = yo.guerrerosEnMano.firstWhere(
+      (g) => g.id == principalId,
     );
-  }
 
-  bool _necesitaReconstruir() {
-    return yo.puntosAcumulados > 5 &&
-        yo.monumentoEnCampo.vidaActual < yo.monumentoEnCampo.vidaMaxima * 0.5;
-  }
-
-  bool _necesitaCurar() {
-    return yo.guerrerosEnCampo.any(
-      (g) =>
-          g.guerreroBase.id.isNotEmpty &&
-          g.vidaActual < g.guerreroBase.vida * 0.7 &&
-          yo.puntosAcumulados > 5,
-    );
-  }
-
-  // ============================================
-  // FUNCIONES DE ACCIÓN
-  // ============================================
-  void _invocarPrincipal() {
-    print('🤖 IA decide invocar a su guerrero principal');
-    final principal = yo.guerrerosEnMano.firstWhere(
-      (g) => g.id == '${yo.civilizacion.id}_001',
-    );
-    onInvocar(principal);
-  }
-
-  void _invocarMejorDisponible() {
-    print('🤖 IA decide invocar al mejor disponible');
-    // Elegir el guerrero más fuerte (más ataque) que pueda pagar
-    final posibles =
-        yo.guerrerosEnMano
-            .where((g) => g.costoInvocacion <= yo.puntosAcumulados)
-            .toList();
-
-    if (posibles.isNotEmpty) {
-      posibles.sort((a, b) => b.ataque.compareTo(a.ataque));
-      onInvocar(posibles.first);
+    if (yo.puntosAcumulados >= guerreroPrincipal.costoInvocacion) {
+      print('🤖 Invocando al principal');
+      onInvocar(guerreroPrincipal);
+      return true;
     } else {
-      onPasarTurno();
+      print('🤖 No alcanzan puntos para el principal');
+      return false;
     }
   }
 
-  void _atacar() {
-    print('🤖 IA decide atacar');
+  bool _intentarInvocarAliado(String principalId) {
+    print('🤖 El principal YA está en el campo, buscando aliados...');
 
-    // Encontrar un atacante disponible
-    final atacante = yo.guerrerosEnCampo.firstWhere(
-      (g) => !g.yaAtacoEsteTurno && g.guerreroBase.id.isNotEmpty,
-    );
+    final aliadosDisponibles =
+        yo.guerrerosEnMano.where((g) => g.id != principalId).toList();
 
-    // Elegir objetivo: primero enemigos vivos, si no, monumento
-    final enemigosVivos =
-        enemigo.guerrerosEnCampo
-            .where((g) => g.guerreroBase.id.isNotEmpty)
-            .toList();
+    if (aliadosDisponibles.isEmpty) {
+      print('🤖 No hay aliados disponibles');
+      return false;
+    }
 
-    if (enemigosVivos.isNotEmpty) {
-      // Atacar al enemigo más débil
-      enemigosVivos.sort((a, b) => a.vidaActual.compareTo(b.vidaActual));
-      onAtacar(atacante, enemigosVivos.first);
+    // Ordenar por mejor relación ataque/costo
+    aliadosDisponibles.sort((a, b) {
+      final double ratioA = a.ataque / a.costoInvocacion;
+      final double ratioB = b.ataque / b.costoInvocacion;
+      return ratioB.compareTo(ratioA);
+    });
+
+    for (var aliado in aliadosDisponibles) {
+      if (yo.puntosAcumulados >= aliado.costoInvocacion) {
+        print('🤖 Invocando aliado: ${aliado.nombreId}');
+        onInvocar(aliado);
+        return true;
+      }
+    }
+
+    print('🤖 No alcanzan puntos para ningún aliado');
+    return false;
+  }
+
+  bool _evaluarMejoraOAtaque(
+    List<GuerreroField> misGuerreros,
+    List<GuerreroField> atacantesDisponibles,
+    List<GuerreroField> enemigosVivos,
+  ) {
+    if (misGuerreros.isEmpty) {
+      print('🤖 No tengo guerreros para atacar');
+      return false;
+    }
+
+    if (atacantesDisponibles.isEmpty) {
+      print('🤖 Todos mis guerreros ya atacaron');
+      return false;
+    }
+
+    // Calcular ataque total
+    final ataqueTotal = misGuerreros.fold(0, (sum, g) => sum + g.ataqueActual);
+
+    // REGLA: Mejora solo si puntos > ataqueTotal × 2
+    if (yo.puntosAcumulados > ataqueTotal * 2) {
+      print('🤖 Mejora matemáticamente superior!');
+      _mejorarAlMejorCandidato(misGuerreros);
+      return true;
+    }
+
+    // Si puntos < 35, atacar directamente
+    if (yo.puntosAcumulados < 35) {
+      print('🤖 Puntos < 35, atacando');
+      onAtacarMultiple(atacantesDisponibles);
+      return true;
+    }
+
+    // Zona gris: 20% de probabilidad de mejorar
+    final random = Random().nextInt(100);
+    if (random < 20) {
+      print('🤖 20% de chance: MEJORANDO');
+      _mejorarAlMejorCandidato(misGuerreros);
+      return true;
     } else {
-      // Atacar monumento
-      onAtacar(atacante, null); // null representa monumento
+      print('🤖 80% de chance: ATACANDO');
+      onAtacarMultiple(atacantesDisponibles);
+      return true;
     }
   }
 
-  void _reconstruir() {
-    print('🤖 IA decide reconstruir');
-    int puntos = min(10, yo.puntosAcumulados); // No gasta más de 10
-    onReconstruir(puntos);
-  }
+  void _mejorarAlMejorCandidato(List<GuerreroField> misGuerreros) {
+    // Buscar el guerrero con más vida (menos probable que muera)
+    misGuerreros.sort((a, b) => b.vidaActual.compareTo(a.vidaActual));
+    final mejorCandidato = misGuerreros.first;
 
-  void _curar() {
-    print('🤖 IA decide curar');
-    final heridos =
-        yo.guerrerosEnCampo
-            .where(
-              (g) =>
-                  g.guerreroBase.id.isNotEmpty &&
-                  g.vidaActual < g.guerreroBase.vida * 0.7,
-            )
-            .toList();
-
-    if (heridos.isNotEmpty) {
-      heridos.sort((a, b) => a.vidaActual.compareTo(b.vidaActual));
-      int puntos = min(10, yo.puntosAcumulados);
-      onCurar(heridos.first, puntos);
-    } else {
-      onPasarTurno();
-    }
+    print('🤖 Mejorando a ${mejorCandidato.guerreroBase.nombreId}');
+    onMejorar(mejorCandidato, yo.puntosAcumulados);
   }
 }

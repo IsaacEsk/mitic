@@ -5,7 +5,7 @@ class GuerreroField {
   int vidaActual;
   int ataqueActual;
   bool yaAtacoEsteTurno;
-  int posicion; // 0,1,2 (o 3 si china)
+  int posicion;
 
   GuerreroField({
     required this.guerreroBase,

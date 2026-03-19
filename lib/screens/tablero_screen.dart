@@ -33,6 +33,10 @@ class _TableroScreenState extends State<TableroScreen> {
   GuerreroField? _atacanteSeleccionado;
   List<GuerreroField> _objetivosPosibles = [];
   bool _dadosLanzadosEsteTurno = false;
+  bool _juegoTerminado = false;
+  int _contadorPremio = 0;
+  bool _turnoExtra = false;
+
   @override
   void initState() {
     super.initState();
@@ -461,28 +465,53 @@ class _TableroScreenState extends State<TableroScreen> {
       // ============================================
       // 1. CARGAR DATOS DE LOS JSON
       // ============================================
-      final guerreros = await GuerreroService.loadGuerreros();
+      final guerrerosBase = await GuerreroService.loadGuerreros();
       final civilizaciones = await CivilizacionService.loadCivilizaciones();
       final translations = await GuerreroService.loadTranslations('es');
 
       // ============================================
-      // 2. BUSCAR GUERREROS POR ID
+      // 2. CREAR GUERREROS CON TEXTOS TRADUCIDOS
       // ============================================
-      final huitzilopochtli = guerreros.firstWhere((g) => g.id == 'azteca_001');
-      final kukulkan = guerreros.firstWhere((g) => g.id == 'maya_001');
-      final terracota = guerreros.firstWhere((g) => g.id == 'china_001');
-      final gladiador = guerreros.firstWhere((g) => g.id == 'romanos_001');
-      final juana = guerreros.firstWhere((g) => g.id == 'francia_001');
-      final templario = guerreros.firstWhere((g) => g.id == 'jerusalen_001');
+      Guerrero _crearGuerreroTraducido(Guerrero base) {
+        return Guerrero(
+          id: base.id,
+          nombreId:
+              translations[base.nombreId] ?? base.nombreId, // 👈 YA ES TEXTO
+          descripcionId:
+              translations[base.descripcionId] ??
+              base.descripcionId, // 👈 YA ES TEXTO
+          civilizacionId: base.civilizacionId,
+          ataque: base.ataque,
+          vida: base.vida,
+          costoInvocacion: base.costoInvocacion,
+          imagen: base.imagen,
+        );
+      }
+
+      // Crear mapa con guerreros traducidos
+      final Map<String, Guerrero> guerreros = {};
+      for (var g in guerrerosBase) {
+        guerreros[g.id] = _crearGuerreroTraducido(g);
+      }
 
       // ============================================
-      // 3. BUSCAR CIVILIZACIONES
+      // 3. OBTENER GUERREROS (YA TRADUCIDOS)
+      // ============================================
+      final huitzilopochtli = guerreros['azteca_001']!;
+      final kukulkan = guerreros['maya_001']!;
+      final terracota = guerreros['china_001']!;
+      final gladiador = guerreros['romanos_001']!;
+      final juana = guerreros['francia_001']!;
+      final templario = guerreros['jerusalen_001']!;
+
+      // ============================================
+      // 4. BUSCAR CIVILIZACIONES
       // ============================================
       final azteca = civilizaciones.firstWhere((c) => c.id == 'azteca');
       final maya = civilizaciones.firstWhere((c) => c.id == 'maya');
 
       // ============================================
-      // 4. CREAR JUGADOR 1 (TÚ)
+      // 5. CREAR JUGADOR 1 (TÚ)
       // ============================================
       final int espacios = (azteca.id == 'china') ? 4 : 3;
       final jugador1 = Jugador(
@@ -505,44 +534,43 @@ class _TableroScreenState extends State<TableroScreen> {
       );
 
       // ============================================
-      // 5. CREAR JUGADOR 2 (ENEMIGO)
+      // 6. CREAR JUGADOR 2 (ENEMIGO)
       // ============================================
       final int espacios2 = (maya.id == 'china') ? 4 : 3;
-
-      // Crear campo con 2 guerreros
-      final List<GuerreroField> campoEnemigo = List.generate(espacios2, (
-        index,
-      ) {
-        return GuerreroField.vacio(posicion: index);
-      });
+      final List<GuerreroField> campoEnemigo = List.generate(
+        espacios2,
+        (index) => GuerreroField.vacio(posicion: index),
+      );
 
       final jugador2 = Jugador(
         civilizacion: maya,
         guerrerosSeleccionados: [kukulkan, templario, juana, terracota],
         monumentoEnCampo: MonumentField.fromCivilizacion(maya),
-        guerrerosEnCampo: campoEnemigo, // <-- AHORA CON 2 GUERREROS
+        guerrerosEnCampo: campoEnemigo,
         puntosAcumulados: 0,
         turno: 1,
         yaAtacoEsteTurno: false,
-        guerrerosEnMano: [
-          juana,
-          terracota,
-          kukulkan,
-          templario,
-        ], // Los que no están en campo
+        guerrerosEnMano: [juana, terracota, kukulkan, templario],
       );
 
       // ============================================
-      // 6. CREAR EL JUEGO
+      // 7. CREAR EL JUEGO
       // ============================================
       setState(() {
         juego = Juego(jugadores: [jugador1, jugador2], turnoActual: 0, fase: 0);
+        _inicializarPremio(); // 👈 NUEVO
       });
 
-      print('✅ Juego inicializado con datos del JSON');
+      print('✅ Juego inicializado con textos traducidos');
     } catch (e) {
       print('❌ Error cargando datos: $e');
     }
+  }
+
+  void _inicializarPremio() {
+    _contadorPremio = Random().nextInt(5) + 5; // 5 a 10
+    //_contadorPremio = 1;
+    print('🎲 Premio especial en $_contadorPremio turnos');
   }
 
   void _mostrarModalPuntos({
@@ -686,9 +714,30 @@ class _TableroScreenState extends State<TableroScreen> {
                         );
 
                         if (modo == ModoAccion.curar) {
-                          gf.vidaActual += _valorSlider.toInt();
+                          int curacion = _valorSlider.toInt();
+
+                          // HABILIDAD MAYA: duplicar curación
+                          if (jugador.civilizacion.id == 'maya') {
+                            curacion *= 2;
+                            print(
+                              '✨ Habilidad Maya: curación duplicada ($curacion)',
+                            );
+                          }
+
+                          gf.vidaActual += curacion;
                         } else {
-                          gf.ataqueActual += _valorSlider.toInt();
+                          // Mejorar ataque
+                          int mejora = _valorSlider.toInt();
+
+                          // HABILIDAD AZTECA: duplicar mejora de ataque
+                          if (jugador.civilizacion.id == 'azteca') {
+                            mejora *= 2;
+                            print(
+                              '✨ Habilidad Azteca: mejora duplicada ($mejora)',
+                            );
+                          }
+
+                          gf.ataqueActual += mejora;
                         }
                       }
 
@@ -731,19 +780,195 @@ class _TableroScreenState extends State<TableroScreen> {
     );
   }
 
+  void _mostrarModalVictoria(Jugador ganador) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: Container(
+            width: 400,
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Colors.amber[800]!, Colors.brown[900]!],
+              ),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: Colors.amber, width: 4),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.6),
+                  blurRadius: 15,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Trofeo
+                const Icon(Icons.emoji_events, color: Colors.amber, size: 64),
+                const SizedBox(height: 16),
+
+                // Texto de victoria
+                Text(
+                  '🏆 ¡VICTORIA! 🏆',
+                  style: const TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black45,
+                        blurRadius: 4,
+                        offset: Offset(2, 2),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Civilización ganadora
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.brown[800],
+                    borderRadius: BorderRadius.circular(30),
+                    border: Border.all(color: Colors.amber, width: 2),
+                  ),
+                  child: Text(
+                    ganador.civilizacion.nombre,
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.amber,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Guerrero principal y monumento (opcional)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    // Guerrero principal
+                    Column(
+                      children: [
+                        Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            color: Colors.brown[300],
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.amber, width: 2),
+                            image: DecorationImage(
+                              image: AssetImage(
+                                ganador.guerrerosSeleccionados.first.imagen,
+                              ),
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          ganador.guerrerosSeleccionados.first.nombreId,
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 10,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    // VS
+                    const Text(
+                      '⚡',
+                      style: TextStyle(color: Colors.amber, fontSize: 30),
+                    ),
+
+                    // Monumento
+                    Column(
+                      children: [
+                        Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            color: Colors.brown[300],
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.amber, width: 2),
+                            image: DecorationImage(
+                              image: AssetImage(
+                                ganador.monumentoEnCampo.imagenPath,
+                              ),
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          ganador.monumentoEnCampo.nombre,
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 10,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+
+                // Botón para volver al menú
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.popUntil(context, (route) => route.isFirst);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.amber,
+                    foregroundColor: Colors.brown[900],
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 40,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
+                  child: const Text(
+                    'VOLVER AL MENÚ',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   // ============================================
   // FUNCIÓN PARA LANZAR DADOS (SOLO VISUAL)
   // ============================================
   void _lanzarDados() {
     // Evitar lanzar si ya se lanzaron este turno
-    if (_dadosLanzadosEsteTurno) return;
+    if (_dadosLanzadosEsteTurno && !_turnoExtra) return;
 
-    _dadosLanzadosEsteTurno = true;
+    // Si es turno extra, permitimos lanzar aunque _dadosLanzadosEsteTurno sea true
+    if (!_turnoExtra) {
+      _dadosLanzadosEsteTurno = true;
+    }
 
-    // ============================================
-    // 1. Guardar QUIÉN es el jugador actual AHORA
-    // ============================================
-    final int turnoActual = juego.turnoActual; // <-- CAPTURAMOS EL TURNO
+    // Guardar el turno actual
+    final int turnoActual = juego.turnoActual;
+    final bool esTurnoExtra = _turnoExtra;
 
     int dadoIzq = Random().nextInt(6) + 1;
     int dadoDer = Random().nextInt(6) + 1;
@@ -767,9 +992,9 @@ class _TableroScreenState extends State<TableroScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text(
-                  '🎲 TIRANDO DADOS...',
-                  style: TextStyle(
+                Text(
+                  esTurnoExtra ? '🎉 ¡TURNO EXTRA! 🎉' : '🎲 TIRANDO DADOS...',
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -809,35 +1034,53 @@ class _TableroScreenState extends State<TableroScreen> {
         Navigator.of(context).pop();
 
         setState(() {
-          // ============================================
-          // 2. Usar el turno que guardamos, NO el actual
-          // ============================================
-          final jugadorQueTiro =
-              juego.jugadores[turnoActual]; // <-- USAMOS EL CAPTURADO
+          final jugadorQueTiro = juego.jugadores[turnoActual];
           jugadorQueTiro.puntosAcumulados += suma;
-
-          // ScaffoldMessenger.of(context).showSnackBar(
-          //   SnackBar(
-          //     content: Text(
-          //       '🎲 +$suma ⚡ para ${jugadorQueTiro.civilizacion.nombre}',
-          //     ),
-          //     backgroundColor: Colors.green[700],
-          //     duration: const Duration(seconds: 1),
-          //   ),
-          // );
         });
+
+        // ============================================
+        // 🎲 SI NO ES TURNO EXTRA, VERIFICAR PREMIO
+        // ============================================
+        if (!esTurnoExtra) {
+          // Descontar contador
+          _contadorPremio--;
+          print('🎲 Contador premio: $_contadorPremio');
+
+          // Si llegó a cero, activar turno extra AHORA MISMO
+          if (_contadorPremio <= 0) {
+            _turnoExtra = true;
+            _contadorPremio = Random().nextInt(6) + 5; // Reiniciar contador
+            print('🎉 ¡TURNO EXTRA ACTIVADO! Nuevo contador: $_contadorPremio');
+
+            // 👇 VOLVER A TIRAR DADOS INMEDIATAMENTE
+            Future.delayed(const Duration(milliseconds: 500), () {
+              _lanzarDados(); // Este será el turno extra
+            });
+          }
+        } else {
+          // Si era turno extra, desactivar la bandera
+          _turnoExtra = false;
+          print('🎲 Turno extra finalizado');
+
+          // Restablecer para el próximo turno normal
+          _dadosLanzadosEsteTurno = true;
+        }
       }
     });
   }
 
   void _lanzarDadosIA() {
-    // Evitar lanzar si ya se lanzaron este turno
-    if (_dadosLanzadosEsteTurno) return;
+    // Evitar lanzar si ya se lanzaron este turno (excepto si es turno extra)
+    if (_dadosLanzadosEsteTurno && !_turnoExtra) return;
 
-    _dadosLanzadosEsteTurno = true;
+    // Si es turno extra, permitimos lanzar aunque _dadosLanzadosEsteTurno sea true
+    if (!_turnoExtra) {
+      _dadosLanzadosEsteTurno = true;
+    }
 
     // Guardar el turno actual (que es el de la IA)
     final int turnoActual = juego.turnoActual;
+    final bool esTurnoExtra = _turnoExtra;
 
     int dadoIzq = Random().nextInt(6) + 1;
     int dadoDer = Random().nextInt(6) + 1;
@@ -861,9 +1104,11 @@ class _TableroScreenState extends State<TableroScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text(
-                  '🤖 IA TIRANDO DADOS...',
-                  style: TextStyle(
+                Text(
+                  esTurnoExtra
+                      ? '🎉 ¡TURNO EXTRA IA! 🎉'
+                      : '🤖 IA TIRANDO DADOS...',
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -903,25 +1148,49 @@ class _TableroScreenState extends State<TableroScreen> {
         Navigator.of(context).pop();
 
         setState(() {
-          // Sumar puntos al jugador de la IA
           final jugadorIA = juego.jugadores[turnoActual];
           jugadorIA.puntosAcumulados += suma;
-
-          // ScaffoldMessenger.of(context).showSnackBar(
-          //   SnackBar(
-          //     content: Text('🤖 IA +$suma ⚡'),
-          //     backgroundColor: Colors.purple[700],
-          //     duration: const Duration(seconds: 1),
-          //   ),
-          // );
         });
 
         // ============================================
-        // 2. DESPUÉS DE LOS DADOS, LA IA TOMA DECISIONES
+        // 🎲 SI NO ES TURNO EXTRA, VERIFICAR PREMIO
         // ============================================
-        Future.delayed(const Duration(milliseconds: 500), () {
-          _tomarDecisionIA();
-        });
+        if (!esTurnoExtra) {
+          // Descontar contador
+          _contadorPremio--;
+          print('🤖 IA - Contador premio: $_contadorPremio');
+
+          // Si llegó a cero, activar turno extra AHORA MISMO
+          if (_contadorPremio <= 0) {
+            _turnoExtra = true;
+            _contadorPremio = Random().nextInt(6) + 5; // Reiniciar contador
+            print(
+              '🤖 IA - 🎉 ¡TURNO EXTRA ACTIVADO! Nuevo contador: $_contadorPremio',
+            );
+
+            // 👇 VOLVER A TIRAR DADOS INMEDIATAMENTE
+            Future.delayed(const Duration(milliseconds: 500), () {
+              _lanzarDadosIA(); // Este será el turno extra
+            });
+          } else {
+            // No hubo premio, continuar con la IA normal
+            Future.delayed(const Duration(milliseconds: 500), () {
+              _tomarDecisionIA();
+            });
+          }
+        } else {
+          // Si era turno extra, desactivar la bandera
+          _turnoExtra = false;
+          print('🤖 IA - Turno extra finalizado');
+
+          // Restablecer para el próximo turno normal
+          _dadosLanzadosEsteTurno = true;
+
+          // Después del turno extra, la IA toma decisiones
+          Future.delayed(const Duration(milliseconds: 500), () {
+            _tomarDecisionIA();
+          });
+        }
       }
     });
   }
@@ -1280,7 +1549,7 @@ class _TableroScreenState extends State<TableroScreen> {
                 //     backgroundColor: Colors.green[700],
                 //   ),
                 // );
-                _cambiarTurno();
+                //_cambiarTurno();
               },
               child: const Text('SÍ', style: TextStyle(color: Colors.green)),
             ),
@@ -1363,6 +1632,14 @@ class _TableroScreenState extends State<TableroScreen> {
             }
           } else {
             oponente.monumentoEnCampo.vidaActual -= atacante.ataqueActual;
+            // 👇 VERIFICAR SI EL MONUMENTO MURIÓ
+            if (oponente.monumentoEnCampo.vidaActual <= 0 && !_juegoTerminado) {
+              oponente.monumentoEnCampo.vidaActual = 0;
+              print('🏆 ¡EL JUGADOR HA GANADO!');
+              _juegoTerminado = true;
+              _mostrarModalVictoria(juego.jugadores[0]);
+              return;
+            }
           }
 
           // Marcar atacante como usado
@@ -1416,6 +1693,15 @@ class _TableroScreenState extends State<TableroScreen> {
     required int dano,
     required VoidCallback onComplete,
   }) {
+    // Determinar la imagen del defensor
+    String? imagenDefensor;
+    if (defensor is GuerreroField) {
+      imagenDefensor = defensor.guerreroBase.imagen;
+    } else {
+      // Es monumento, obtener su imagen
+      imagenDefensor = juego.jugadores[1].monumentoEnCampo.imagenPath;
+    }
+
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -1523,17 +1809,15 @@ class _TableroScreenState extends State<TableroScreen> {
                               width: 2,
                             ),
                             image:
-                                defensor is GuerreroField
+                                imagenDefensor != null
                                     ? DecorationImage(
-                                      image: AssetImage(
-                                        defensor.guerreroBase.imagen,
-                                      ),
+                                      image: AssetImage(imagenDefensor),
                                       fit: BoxFit.cover,
                                     )
                                     : null,
                           ),
                           child:
-                              defensor is! GuerreroField
+                              imagenDefensor == null
                                   ? const Center(
                                     child: Icon(
                                       Icons.account_balance,
@@ -1547,7 +1831,7 @@ class _TableroScreenState extends State<TableroScreen> {
                         Text(
                           defensor is GuerreroField
                               ? defensor.guerreroBase.nombreId
-                              : 'MONUMENTO',
+                              : juego.jugadores[1].monumentoEnCampo.nombre,
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 12,
@@ -1697,6 +1981,7 @@ class _TableroScreenState extends State<TableroScreen> {
   }
 
   void _cambiarTurno() {
+    if (_juegoTerminado) return; // 👈 IMPORTANTE
     setState(() {
       juego.turnoActual = juego.turnoActual == 0 ? 1 : 0;
 
@@ -1726,6 +2011,22 @@ class _TableroScreenState extends State<TableroScreen> {
     required int dano,
     required VoidCallback onComplete,
   }) {
+    // Determinar la imagen del defensor
+    String? imagenDefensor;
+    String nombreDefensor;
+    int vidaDefensor;
+
+    if (defensor is GuerreroField) {
+      imagenDefensor = defensor.guerreroBase.imagen;
+      nombreDefensor = defensor.guerreroBase.nombreId;
+      vidaDefensor = defensor.vidaActual;
+    } else {
+      // Es monumento, obtener su imagen
+      imagenDefensor = juego.jugadores[0].monumentoEnCampo.imagenPath;
+      nombreDefensor = juego.jugadores[0].monumentoEnCampo.nombre;
+      vidaDefensor = juego.jugadores[0].monumentoEnCampo.vidaActual;
+    }
+
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -1833,17 +2134,15 @@ class _TableroScreenState extends State<TableroScreen> {
                               width: 2,
                             ),
                             image:
-                                defensor is GuerreroField
+                                imagenDefensor != null
                                     ? DecorationImage(
-                                      image: AssetImage(
-                                        defensor.guerreroBase.imagen,
-                                      ),
+                                      image: AssetImage(imagenDefensor),
                                       fit: BoxFit.cover,
                                     )
                                     : null,
                           ),
                           child:
-                              defensor is! GuerreroField
+                              imagenDefensor == null
                                   ? const Center(
                                     child: Icon(
                                       Icons.account_balance,
@@ -1855,16 +2154,14 @@ class _TableroScreenState extends State<TableroScreen> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          defensor is GuerreroField
-                              ? defensor.guerreroBase.nombreId
-                              : 'MONUMENTO',
+                          nombreDefensor,
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 12,
                           ),
                         ),
                         Text(
-                          '❤️ ${defensor is GuerreroField ? defensor.vidaActual + dano : juego.jugadores[0].monumentoEnCampo.vidaActual + dano} → ❤️ ${defensor is GuerreroField ? defensor.vidaActual : juego.jugadores[0].monumentoEnCampo.vidaActual}',
+                          '❤️ ${vidaDefensor + dano} → ❤️ $vidaDefensor',
                           style: const TextStyle(
                             color: Colors.red,
                             fontSize: 12,
@@ -1923,7 +2220,7 @@ class _TableroScreenState extends State<TableroScreen> {
       },
     );
 
-    // Cerrar el modal después de 2 segundos y continuar
+    // Cerrar el modal después de 4 segundos y continuar
     Future.delayed(const Duration(seconds: 4), () {
       if (context.mounted) {
         Navigator.of(context).pop();
@@ -1950,6 +2247,11 @@ class _TableroScreenState extends State<TableroScreen> {
   }
 
   void _ejecutarAtaqueMultipleIA(List<GuerreroField> atacantes, int index) {
+    if (_juegoTerminado) {
+      print('🛑 Juego terminado, cancelando ataques restantes');
+      return;
+    }
+
     if (index >= atacantes.length) {
       print('🤖 IA terminó de atacar con todos sus guerreros');
       _cambiarTurno();
@@ -1985,6 +2287,14 @@ class _TableroScreenState extends State<TableroScreen> {
         objetivo.vidaActual -= atacante.ataqueActual;
       } else {
         oponente.monumentoEnCampo.vidaActual -= atacante.ataqueActual;
+        // 👇 VERIFICAR SI EL MONUMENTO MURIÓ
+        if (oponente.monumentoEnCampo.vidaActual <= 0 && !_juegoTerminado) {
+          oponente.monumentoEnCampo.vidaActual = 0;
+          print('🏆 ¡EL JUGADOR HA GANADO!');
+          _juegoTerminado = true;
+          _mostrarModalVictoria(juego.jugadores[1]);
+          return;
+        }
       }
       atacante.yaAtacoEsteTurno = true;
     });
@@ -2048,7 +2358,7 @@ class _TableroScreenState extends State<TableroScreen> {
     });
 
     // Después de invocar, cambiar turno
-    _cambiarTurno();
+    //_cambiarTurno();
   }
 
   void _atacarIA(GuerreroField atacante, dynamic objetivo) {
@@ -2072,6 +2382,15 @@ class _TableroScreenState extends State<TableroScreen> {
       } else {
         // Atacar monumento
         oponente.monumentoEnCampo.vidaActual -= atacante.ataqueActual;
+        // 👇 VERIFICAR SI EL MONUMENTO MURIÓ
+        // 👇 VERIFICAR SI EL MONUMENTO MURIÓ
+        if (oponente.monumentoEnCampo.vidaActual <= 0 && !_juegoTerminado) {
+          oponente.monumentoEnCampo.vidaActual = 0;
+          print('🏆 ¡EL JUGADOR HA GANADO!');
+          _juegoTerminado = true;
+          _mostrarModalVictoria(juego.jugadores[1]);
+          return;
+        }
       }
 
       atacante.yaAtacoEsteTurno = true;
@@ -2098,19 +2417,33 @@ class _TableroScreenState extends State<TableroScreen> {
   }
 
   void _curarIA(GuerreroField guerrero, int puntos) {
+    int curacionReal = puntos;
+
+    // 👇 HABILIDAD MAYA: duplicar curación
+    if (juego.jugadores[1].civilizacion.id == 'maya') {
+      curacionReal *= 2;
+      print('✨ IA Maya: curación duplicada ($curacionReal)');
+    }
+
     setState(() {
-      guerrero.vidaActual += puntos;
+      guerrero.vidaActual += curacionReal;
       juego.jugadores[1].puntosAcumulados -= puntos;
     });
-    //_cambiarTurno();
   }
 
   void _mejorarIA(GuerreroField guerrero, int puntos) {
+    int mejoraReal = puntos;
+
+    // 👇 HABILIDAD AZTECA: duplicar mejora de ataque
+    if (juego.jugadores[1].civilizacion.id == 'azteca') {
+      mejoraReal *= 2;
+      print('✨ IA Azteca: mejora duplicada ($mejoraReal)');
+    }
+
     setState(() {
-      guerrero.ataqueActual += puntos;
+      guerrero.ataqueActual += mejoraReal;
       juego.jugadores[1].puntosAcumulados -= puntos;
     });
-    //_cambiarTurno();
   }
 
   void _ejecutarIA() {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mitic/screens/mitic2_screen.dart';
 import 'package:mitic/screens/tablero_screen.dart';
 import 'screens/select_civ.dart'; // <--- importas tu screen
 
@@ -17,7 +18,8 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
       //home: const SelectCivScreen(), // <--- aquí va tu screen
-      home: const TableroScreen(), // <--- Solo para probar el diseño
+      //home: const TableroScreen(), // <--- Solo para probar el diseño
+      home: const Mitic2Screen(),
     );
   }
 }

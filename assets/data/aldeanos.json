@@ -1,0 +1,92 @@
+[
+  {
+    "id": "aldeano_azteca",
+    "civilizacion_id": "azteca",
+    "nombre": "Aldeano Azteca",
+    "vida": 2,
+    "puntos_reconstruccion": 2,
+    "costo_invocacion": 2,
+    "imagen": "assets/images/aldeanos/aldeano_azteca.png"
+  },
+  {
+    "id": "aldeano_maya",
+    "civilizacion_id": "maya",
+    "nombre": "Aldeano Maya",
+    "vida": 2,
+    "puntos_reconstruccion": 1,
+    "costo_invocacion": 1,
+    "imagen": "assets/images/aldeanos/aldeano_maya.png"
+  },
+  {
+    "id": "aldeano_romanos",
+    "civilizacion_id": "romanos",
+    "nombre": "Aldeano Romano",
+    "vida": 3,
+    "puntos_reconstruccion": 1,
+    "costo_invocacion": 1,
+    "imagen": "assets/images/aldeanos/aldeano_romano.png"
+  },
+  {
+    "id": "aldeano_egipcios",
+    "civilizacion_id": "egipcios",
+    "nombre": "Aldeano Egipcio",
+    "vida": 2,
+    "puntos_reconstruccion": 1,
+    "costo_invocacion": 1,
+    "imagen": "assets/images/aldeanos/aldeano_egipcio.png"
+  },
+  {
+    "id": "aldeano_francia",
+    "civilizacion_id": "francia",
+    "nombre": "Aldeano Francés",
+    "vida": 2,
+    "puntos_reconstruccion": 1,
+    "costo_invocacion": 1,
+    "imagen": "assets/images/aldeanos/aldeano_frances.png"
+  },
+  {
+    "id": "aldeano_jerusalen",
+    "civilizacion_id": "jerusalen",
+    "nombre": "Aldeano de Jerusalén",
+    "vida": 2,
+    "puntos_reconstruccion": 1,
+    "costo_invocacion": 1,
+    "imagen": "assets/images/aldeanos/aldeano_jerusalen.png"
+  },
+  {
+    "id": "aldeano_sarracenos",
+    "civilizacion_id": "sarracenos",
+    "nombre": "Aldeano Sarraceno",
+    "vida": 2,
+    "puntos_reconstruccion": 1,
+    "costo_invocacion": 1,
+    "imagen": "assets/images/aldeanos/aldeano_sarraceno.png"
+  },
+  {
+    "id": "aldeano_india",
+    "civilizacion_id": "india",
+    "nombre": "Aldeano Indio",
+    "vida": 2,
+    "puntos_reconstruccion": 1,
+    "costo_invocacion": 1,
+    "imagen": "assets/images/aldeanos/aldeano_indio.png"
+  },
+  {
+    "id": "aldeano_china",
+    "civilizacion_id": "china",
+    "nombre": "Aldeano Chino",
+    "vida": 3,
+    "puntos_reconstruccion": 2,
+    "costo_invocacion": 2,
+    "imagen": "assets/images/aldeanos/aldeano_chino.png"
+  },
+  {
+    "id": "aldeano_japon",
+    "civilizacion_id": "japon",
+    "nombre": "Aldeano Japonés",
+    "vida": 2,
+    "puntos_reconstruccion": 2,
+    "costo_invocacion": 2,
+    "imagen": "assets/images/aldeanos/aldeano_japones.png"
+  }
+]

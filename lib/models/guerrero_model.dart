@@ -29,9 +29,9 @@ class Guerrero {
   factory Guerrero.fromJson(Map<String, dynamic> json) {
     // Remove 'assets/' prefix if present, since Image.asset() adds it automatically
     var imagenPath = json['imagen'] as String;
-    if (imagenPath.startsWith('assets/')) {
-      imagenPath = imagenPath.substring(7); // remove 'assets/' prefix
-    }
+    // if (imagenPath.startsWith('assets/')) {
+    //   imagenPath = imagenPath.substring(7); // remove 'assets/' prefix
+    // }
 
     return Guerrero(
       id: json['id'] as String,

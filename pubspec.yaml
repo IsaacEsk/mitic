@@ -60,12 +60,14 @@ flutter:
   # the material Icons class.
   uses-material-design: true
   assets:
+    - assets/data/
     - assets/images/monumentos/
     - assets/images/personajes/
     - assets/images/dados/
     - assets/images/aldeanos/
     - assets/images/cultivos/
-    - assets/data/  # 👈 ESTE ES EL IMPORTANTE
+    - assets/images/torres/
+    - assets/images/hospitales/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

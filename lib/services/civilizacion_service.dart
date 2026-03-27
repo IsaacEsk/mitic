@@ -25,7 +25,7 @@ class CivilizacionService {
   /// Translation loader is identical to GuerreroService; keep a copy here
   /// so callers don't have to import the other service.
   static Future<Map<String, String>> loadTranslations(String locale) async {
-    final jsonString = await rootBundle.loadString('assets/data/$locale.json');
+    final jsonString = await rootBundle.loadString('data/$locale.json');
     final map = json.decode(jsonString) as Map<String, dynamic>;
     return map.map((k, v) => MapEntry(k, v.toString()));
   }

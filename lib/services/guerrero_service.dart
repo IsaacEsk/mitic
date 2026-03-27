@@ -13,9 +13,7 @@ class GuerreroService {
 
   /// Load the list of warriors from `assets/data/personajes.json`.
   static Future<List<Guerrero>> loadGuerreros() async {
-    final jsonString = await rootBundle.loadString(
-      'assets/data/personajes.json',
-    );
+    final jsonString = await rootBundle.loadString('data/personajes.json');
     final list = json.decode(jsonString) as List<dynamic>;
     return list
         .map((e) => Guerrero.fromJson(e as Map<String, dynamic>))

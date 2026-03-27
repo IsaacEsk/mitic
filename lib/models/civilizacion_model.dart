@@ -44,10 +44,10 @@ class Muralla {
 
   factory Muralla.fromJson(Map<String, dynamic> json) {
     var imagenPath = json['imagen'] as String;
-    if (imagenPath.startsWith('assets/')) {
-      // keep path relative to `Image.asset` convention (no leading slash)
-      imagenPath = imagenPath.substring(7);
-    }
+    // if (imagenPath.startsWith('assets/')) {
+    //   // keep path relative to `Image.asset` convention (no leading slash)
+    //   imagenPath = imagenPath.substring(7);
+    // }
     return Muralla(
       nombre: json['nombre'] as String,
       vida: json['vida'] as int,

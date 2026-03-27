@@ -1,0 +1,92 @@
+[
+  {
+    "id": "hospital_azteca",
+    "civilizacion_id": "azteca",
+    "nombre": "Hospital Azteca",
+    "vida": 55,
+    "poder_curacion": 2,
+    "costo_invocacion": 5,
+    "imagen": "assets/images/hospitales/hospital_azteca.png"
+  },
+  {
+    "id": "hospital_maya",
+    "civilizacion_id": "maya",
+    "nombre": "Hospital Maya",
+    "vida": 60,
+    "poder_curacion": 1,
+    "costo_invocacion": 6,
+    "imagen": "assets/images/hospitales/hospital_maya.png"
+  },
+  {
+    "id": "hospital_romanos",
+    "civilizacion_id": "romanos",
+    "nombre": "Hospital Romano",
+    "vida": 50,
+    "poder_curacion": 2,
+    "costo_invocacion": 5,
+    "imagen": "assets/images/hospitales/hospital_romano.png"
+  },
+  {
+    "id": "hospital_egipcios",
+    "civilizacion_id": "egipcios",
+    "nombre": "Hospital Egipcio",
+    "vida": 45,
+    "poder_curacion": 2,
+    "costo_invocacion": 4,
+    "imagen": "assets/images/hospitales/hospital_egipcio.png"
+  },
+  {
+    "id": "hospital_francia",
+    "civilizacion_id": "francia",
+    "nombre": "Hospital Francés",
+    "vida": 52,
+    "poder_curacion": 1,
+    "costo_invocacion": 5,
+    "imagen": "assets/images/hospitales/hospital_frances.png"
+  },
+  {
+    "id": "hospital_jerusalen",
+    "civilizacion_id": "jerusalen",
+    "nombre": "Hospital de Jerusalén",
+    "vida": 58,
+    "poder_curacion": 2,
+    "costo_invocacion": 6,
+    "imagen": "assets/images/hospitales/hospital_jerusalen.png"
+  },
+  {
+    "id": "hospital_sarracenos",
+    "civilizacion_id": "sarracenos",
+    "nombre": "Hospital Sarraceno",
+    "vida": 48,
+    "poder_curacion": 1,
+    "costo_invocacion": 4,
+    "imagen": "assets/images/hospitales/hospital_sarraceno.png"
+  },
+  {
+    "id": "hospital_india",
+    "civilizacion_id": "india",
+    "nombre": "Hospital Indio",
+    "vida": 62,
+    "poder_curacion": 2,
+    "costo_invocacion": 5,
+    "imagen": "assets/images/hospitales/hospital_indio.png"
+  },
+  {
+    "id": "hospital_china",
+    "civilizacion_id": "china",
+    "nombre": "Hospital Chino",
+    "vida": 70,
+    "poder_curacion": 1,
+    "costo_invocacion": 6,
+    "imagen": "assets/images/hospitales/hospital_chino.png"
+  },
+  {
+    "id": "hospital_japon",
+    "civilizacion_id": "japon",
+    "nombre": "Hospital Japonés",
+    "vida": 54,
+    "poder_curacion": 2,
+    "costo_invocacion": 5,
+    "imagen": "assets/images/hospitales/hospital_japones.png"
+  }
+]

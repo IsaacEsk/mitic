@@ -1,0 +1,92 @@
+[
+  {
+    "id": "torre_azteca",
+    "civilizacion_id": "azteca",
+    "nombre": "Torre Azteca",
+    "ataque": 2,
+    "vida": 110,
+    "costo_invocacion": 22,
+    "imagen": "assets/images/torres/torre_azteca.png"
+  },
+  {
+    "id": "torre_maya",
+    "civilizacion_id": "maya",
+    "nombre": "Torre Maya",
+    "ataque": 1,
+    "vida": 120,
+    "costo_invocacion": 20,
+    "imagen": "assets/images/torres/torre_maya.png"
+  },
+  {
+    "id": "torre_romanos",
+    "civilizacion_id": "romanos",
+    "nombre": "Torre Romana",
+    "ataque": 2,
+    "vida": 100,
+    "costo_invocacion": 23,
+    "imagen": "assets/images/torres/torre_romana.png"
+  },
+  {
+    "id": "torre_egipcios",
+    "civilizacion_id": "egipcios",
+    "nombre": "Torre Egipcia",
+    "ataque": 1,
+    "vida": 115,
+    "costo_invocacion": 21,
+    "imagen": "assets/images/torres/torre_egipcia.png"
+  },
+  {
+    "id": "torre_francia",
+    "civilizacion_id": "francia",
+    "nombre": "Torre Francesa",
+    "ataque": 2,
+    "vida": 95,
+    "costo_invocacion": 24,
+    "imagen": "assets/images/torres/torre_francesa.png"
+  },
+  {
+    "id": "torre_jerusalen",
+    "civilizacion_id": "jerusalen",
+    "nombre": "Torre de Jerusalén",
+    "ataque": 1,
+    "vida": 110,
+    "costo_invocacion": 22,
+    "imagen": "assets/images/torres/torre_jerusalen.png"
+  },
+  {
+    "id": "torre_sarracenos",
+    "civilizacion_id": "sarracenos",
+    "nombre": "Torre Sarracena",
+    "ataque": 2,
+    "vida": 100,
+    "costo_invocacion": 23,
+    "imagen": "assets/images/torres/torre_sarracena.png"
+  },
+  {
+    "id": "torre_india",
+    "civilizacion_id": "india",
+    "nombre": "Torre India",
+    "ataque": 1,
+    "vida": 118,
+    "costo_invocacion": 20,
+    "imagen": "assets/images/torres/torre_india.png"
+  },
+  {
+    "id": "torre_china",
+    "civilizacion_id": "china",
+    "nombre": "Torre China",
+    "ataque": 2,
+    "vida": 105,
+    "costo_invocacion": 25,
+    "imagen": "assets/images/torres/torre_china.png"
+  },
+  {
+    "id": "torre_japon",
+    "civilizacion_id": "japon",
+    "nombre": "Torre Japonesa",
+    "ataque": 1,
+    "vida": 120,
+    "costo_invocacion": 21,
+    "imagen": "assets/images/torres/torre_japonesa.png"
+  }
+]

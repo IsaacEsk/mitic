@@ -65131,7 +65131,7 @@ A.W1.prototype={
 $2(a,b){return new A.b3(a,J.dw(b),t.mT)},
 $S:424}
 A.zN.prototype={
-O(a){var s,r,q=null,p=this.c,o=p*0.9,n=(p-o)/2,m=p*0.15,l=m*0.7,k=this.d,j=k.e,i=j?o*0.5:o
+O(a){var s,r,q=null,p=this.c,o=p*0.9,n=(p-o)/2,m=p*0.25,l=m*0.7,k=this.d,j=k.e,i=j?o*0.5:o
 j=j?o*0.5:o
 s=A.b4(12)
 i=A.es(q,A.abI(A.at(q,q,B.l,q,q,new A.av(B.bo,A.ei(B.ar,new A.cT(k.a.r,q,q)),q,s,q,q,B.r),q,q,q,q,q,q,q),B.hh,B.at,j,i),q,q,n,q,n,q)

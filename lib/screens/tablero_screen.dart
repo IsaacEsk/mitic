@@ -7,7 +7,6 @@ import '../enums/modoaccion.dart';
 import '../models/juego_model.dart';
 import '../models/jugador_model.dart';
 import '../models/guerrero_model.dart';
-import '../models/civilizacion_model.dart';
 import '../models/monument_model.dart';
 import '../models/guerrero_field_model.dart';
 import '../ia/ia_controller.dart';
@@ -331,8 +330,8 @@ class _TableroScreenState extends State<TableroScreen> {
                                       width: 170,
                                       padding: const EdgeInsets.all(8),
                                       decoration: BoxDecoration(
-                                        color: Colors.brown[200]?.withOpacity(
-                                          0.3,
+                                        color: Colors.brown[200]?.withValues(
+                                          alpha: 0.3,
                                         ),
                                         borderRadius: BorderRadius.circular(12),
                                         border: Border.all(
@@ -472,7 +471,7 @@ class _TableroScreenState extends State<TableroScreen> {
       // ============================================
       // 2. CREAR GUERREROS CON TEXTOS TRADUCIDOS
       // ============================================
-      Guerrero _crearGuerreroTraducido(Guerrero base) {
+      Guerrero crearGuerreroTraducido(Guerrero base) {
         return Guerrero(
           id: base.id,
           nombreId:
@@ -491,7 +490,7 @@ class _TableroScreenState extends State<TableroScreen> {
       // Crear mapa con guerreros traducidos
       final Map<String, Guerrero> guerreros = {};
       for (var g in guerrerosBase) {
-        guerreros[g.id] = _crearGuerreroTraducido(g);
+        guerreros[g.id] = crearGuerreroTraducido(g);
       }
 
       // ============================================
@@ -614,7 +613,7 @@ class _TableroScreenState extends State<TableroScreen> {
       return;
     }
 
-    double _valorSlider = 1;
+    double valorSlider = 1;
 
     showDialog(
       context: context,
@@ -668,19 +667,19 @@ class _TableroScreenState extends State<TableroScreen> {
                   ),
                   const SizedBox(height: 16),
                   Slider(
-                    value: _valorSlider,
+                    value: valorSlider,
                     min: 1,
                     max: puntosDisponibles.toDouble(),
                     divisions: puntosDisponibles,
                     activeColor: color,
                     onChanged: (value) {
                       setStateDialog(() {
-                        _valorSlider = value;
+                        valorSlider = value;
                       });
                     },
                   ),
                   Text(
-                    '${_valorSlider.toInt()} ⚡',
+                    '${valorSlider.toInt()} ⚡',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 24,
@@ -706,7 +705,7 @@ class _TableroScreenState extends State<TableroScreen> {
                       if (modo == ModoAccion.reconstruir) {
                         // Reconstruir monumento
                         jugador.monumentoEnCampo.vidaActual +=
-                            _valorSlider.toInt();
+                            valorSlider.toInt();
                       } else {
                         // Curar o mejorar guerrero
                         final gf = jugador.guerrerosEnCampo.firstWhere(
@@ -714,7 +713,7 @@ class _TableroScreenState extends State<TableroScreen> {
                         );
 
                         if (modo == ModoAccion.curar) {
-                          int curacion = _valorSlider.toInt();
+                          int curacion = valorSlider.toInt();
 
                           // HABILIDAD MAYA: duplicar curación
                           if (jugador.civilizacion.id == 'maya') {
@@ -727,7 +726,7 @@ class _TableroScreenState extends State<TableroScreen> {
                           gf.vidaActual += curacion;
                         } else {
                           // Mejorar ataque
-                          int mejora = _valorSlider.toInt();
+                          int mejora = valorSlider.toInt();
 
                           // HABILIDAD AZTECA: duplicar mejora de ataque
                           if (jugador.civilizacion.id == 'azteca') {
@@ -741,7 +740,7 @@ class _TableroScreenState extends State<TableroScreen> {
                         }
                       }
 
-                      jugador.puntosAcumulados -= _valorSlider.toInt();
+                      jugador.puntosAcumulados -= valorSlider.toInt();
                       _modoActual = ModoAccion.normal;
                       _guerreroSeleccionado = null;
                     });
@@ -749,10 +748,10 @@ class _TableroScreenState extends State<TableroScreen> {
                     // Mensaje de éxito
                     String mensaje;
                     if (modo == ModoAccion.reconstruir) {
-                      mensaje = '✅ ${_valorSlider.toInt()} ⚡ reconstruidos';
+                      mensaje = '✅ ${valorSlider.toInt()} ⚡ reconstruidos';
                     } else {
                       mensaje =
-                          '✅ ${_valorSlider.toInt()} ⚡ ${modo == ModoAccion.curar ? 'curados' : 'mejorados'} a ${guerrero!['nombre']}';
+                          '✅ ${valorSlider.toInt()} ⚡ ${modo == ModoAccion.curar ? 'curados' : 'mejorados'} a ${guerrero!['nombre']}';
                     }
 
                     // ScaffoldMessenger.of(context).showSnackBar(
@@ -801,7 +800,7 @@ class _TableroScreenState extends State<TableroScreen> {
               border: Border.all(color: Colors.amber, width: 4),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.6),
+                  color: Colors.black.withValues(alpha: 0.6),
                   blurRadius: 15,
                   offset: const Offset(0, 8),
                 ),
@@ -1002,7 +1001,7 @@ class _TableroScreenState extends State<TableroScreen> {
                 ),
                 const SizedBox(height: 20),
                 Image.asset(
-                  'assets/images/dados/${dadoIzq}x${dadoDer}.png',
+                  'assets/images/dados/${dadoIzq}x$dadoDer.png',
                   width: 200,
                   height: 200,
                   errorBuilder: (context, error, stack) {
@@ -1012,7 +1011,7 @@ class _TableroScreenState extends State<TableroScreen> {
                       color: Colors.brown[600],
                       child: Center(
                         child: Text(
-                          '${dadoIzq}x${dadoDer}',
+                          '${dadoIzq}x$dadoDer',
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 30,
@@ -1116,7 +1115,7 @@ class _TableroScreenState extends State<TableroScreen> {
                 ),
                 const SizedBox(height: 20),
                 Image.asset(
-                  'assets/images/dados/${dadoIzq}x${dadoDer}.png',
+                  'assets/images/dados/${dadoIzq}x$dadoDer.png',
                   width: 200,
                   height: 200,
                   errorBuilder: (context, error, stack) {
@@ -1126,7 +1125,7 @@ class _TableroScreenState extends State<TableroScreen> {
                       color: Colors.brown[600],
                       child: Center(
                         child: Text(
-                          '${dadoIzq}x${dadoDer}',
+                          '${dadoIzq}x$dadoDer',
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 30,
@@ -1305,7 +1304,7 @@ class _TableroScreenState extends State<TableroScreen> {
               border: Border.all(color: Colors.amber, width: 4),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.5),
+                  color: Colors.black.withValues(alpha: 0.5),
                   blurRadius: 12,
                   offset: const Offset(0, 6),
                 ),
@@ -1722,7 +1721,7 @@ class _TableroScreenState extends State<TableroScreen> {
               border: Border.all(color: Colors.cyan, width: 3),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.5),
+                  color: Colors.black.withValues(alpha: 0.5),
                   blurRadius: 10,
                   offset: const Offset(0, 5),
                 ),
@@ -1858,7 +1857,7 @@ class _TableroScreenState extends State<TableroScreen> {
                     vertical: 10,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.red[900]?.withOpacity(0.3),
+                    color: Colors.red[900]?.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(30),
                     border: Border.all(color: Colors.red, width: 1),
                   ),
@@ -1910,7 +1909,7 @@ class _TableroScreenState extends State<TableroScreen> {
               border: Border.all(color: Colors.amber, width: 3),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.5),
+                  color: Colors.black.withValues(alpha: 0.5),
                   blurRadius: 10,
                   offset: const Offset(0, 5),
                 ),
@@ -1986,9 +1985,9 @@ class _TableroScreenState extends State<TableroScreen> {
       juego.turnoActual = juego.turnoActual == 0 ? 1 : 0;
 
       // Resetear guerreros que atacaron
-      juego.jugadores[juego.turnoActual].guerrerosEnCampo.forEach((gf) {
+      for (var gf in juego.jugadores[juego.turnoActual].guerrerosEnCampo) {
         gf.yaAtacoEsteTurno = false;
-      });
+      }
 
       // Limpiar modos
       _modoActual = ModoAccion.normal;
@@ -2047,7 +2046,7 @@ class _TableroScreenState extends State<TableroScreen> {
               border: Border.all(color: Colors.red[700]!, width: 3),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.5),
+                  color: Colors.black.withValues(alpha: 0.5),
                   blurRadius: 10,
                   offset: const Offset(0, 5),
                 ),
@@ -2181,7 +2180,7 @@ class _TableroScreenState extends State<TableroScreen> {
                     vertical: 10,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.red[900]?.withOpacity(0.3),
+                    color: Colors.red[900]?.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(30),
                     border: Border.all(color: Colors.red, width: 1),
                   ),

@@ -22,6 +22,7 @@ abstract class IABase {
   final Map<String, Hospital>? hospitales;
   final Function(int fila, int columna, String tipo, String id)
   onInvocar; // 👈 NUEVO
+  final Function(String tipo, int fila, int columna, int puntos) onMejorar;
 
   IABase({
     required this.juego,
@@ -33,6 +34,7 @@ abstract class IABase {
     required this.torres,
     required this.hospitales,
     required this.onInvocar, // 👈 NUEVO
+    required this.onMejorar,
   });
 
   void tomarDecision();

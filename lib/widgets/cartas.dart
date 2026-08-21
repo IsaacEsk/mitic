@@ -30,17 +30,17 @@ Widget buildMonumentoCardYU({
         boxShadow: [
           if (esObjetivo)
             BoxShadow(
-              color: Colors.orange.withOpacity(0.6),
+              color: Colors.orange.withValues(alpha: 0.6),
               blurRadius: 15,
               spreadRadius: 3,
             ),
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 8,
             offset: const Offset(4, 4),
           ),
           BoxShadow(
-            color: Colors.amber[100]!.withOpacity(0.5),
+            color: Colors.amber[100]!.withValues(alpha: 0.5),
             blurRadius: 4,
             offset: const Offset(-2, -2),
           ),
@@ -98,7 +98,7 @@ Widget buildMonumentoCardYU({
                 border: Border.all(color: Colors.amber[700]!, width: 2),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: Colors.black.withValues(alpha: 0.2),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),
@@ -165,7 +165,7 @@ Widget buildMonumentoCardYU({
               border: Border.all(color: Colors.red[400]!, width: 1.5),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.red.withOpacity(0.2),
+                  color: Colors.red.withValues(alpha: 0.2),
                   blurRadius: 4,
                   offset: const Offset(0, 2),
                 ),
@@ -222,17 +222,17 @@ Widget buildMonumentoCardYUopponent({
         boxShadow: [
           if (esObjetivo)
             BoxShadow(
-              color: Colors.orange.withOpacity(0.6),
+              color: Colors.orange.withValues(alpha: 0.6),
               blurRadius: 15,
               spreadRadius: 3,
             ),
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 8,
             offset: const Offset(4, 4),
           ),
           BoxShadow(
-            color: Colors.amber[100]!.withOpacity(0.5),
+            color: Colors.amber[100]!.withValues(alpha: 0.5),
             blurRadius: 4,
             offset: const Offset(-2, -2),
           ),
@@ -251,7 +251,7 @@ Widget buildMonumentoCardYUopponent({
               border: Border.all(color: Colors.red[400]!, width: 1.5),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.red.withOpacity(0.2),
+                  color: Colors.red.withValues(alpha: 0.2),
                   blurRadius: 4,
                   offset: const Offset(0, 2),
                 ),
@@ -285,7 +285,7 @@ Widget buildMonumentoCardYUopponent({
                 border: Border.all(color: Colors.amber[700]!, width: 2),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: Colors.black.withValues(alpha: 0.2),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),
@@ -450,17 +450,17 @@ Widget buildGuerreroCardYU({
         boxShadow: [
           if (isSelectable && isSelected)
             BoxShadow(
-              color: borderColor.withOpacity(0.6),
+              color: borderColor.withValues(alpha: 0.6),
               blurRadius: 15,
               spreadRadius: 3,
             ),
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 8,
             offset: const Offset(4, 4),
           ),
           BoxShadow(
-            color: Colors.brown[100]!.withOpacity(0.5),
+            color: Colors.brown[100]!.withValues(alpha: 0.5),
             blurRadius: 4,
             offset: const Offset(-2, -2),
           ),
@@ -541,7 +541,7 @@ Widget buildGuerreroCardYU({
                         border: Border.all(color: Colors.brown[600]!, width: 2),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
+                            color: Colors.black.withValues(alpha: 0.2),
                             blurRadius: 4,
                             offset: const Offset(0, 2),
                           ),
@@ -639,17 +639,17 @@ Widget buildGuerreroCardYUopponet({
         boxShadow: [
           if (esObjetivo)
             BoxShadow(
-              color: Colors.orange.withOpacity(0.6),
+              color: Colors.orange.withValues(alpha: 0.6),
               blurRadius: 15,
               spreadRadius: 3,
             ),
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 8,
             offset: const Offset(4, 4),
           ),
           BoxShadow(
-            color: Colors.brown[100]!.withOpacity(0.5),
+            color: Colors.brown[100]!.withValues(alpha: 0.5),
             blurRadius: 4,
             offset: const Offset(-2, -2),
           ),
@@ -702,7 +702,7 @@ Widget buildGuerreroCardYUopponet({
                         border: Border.all(color: Colors.brown[600]!, width: 2),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
+                            color: Colors.black.withValues(alpha: 0.2),
                             blurRadius: 4,
                             offset: const Offset(0, 2),
                           ),
@@ -785,9 +785,9 @@ Widget _buildStatChip(String icon, String value, Color color) {
   return Container(
     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
     decoration: BoxDecoration(
-      color: color.withOpacity(0.1),
+      color: color.withValues(alpha: 0.1),
       borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: color.withOpacity(0.5), width: 1),
+      border: Border.all(color: color.withValues(alpha: 0.5), width: 1),
     ),
     child: Row(
       mainAxisSize: MainAxisSize.min,
@@ -826,7 +826,7 @@ Widget buildPuntosCounter(int puntos, {bool esEnemigo = false}) {
       border: Border.all(color: Colors.white, width: 2),
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withOpacity(0.3),
+          color: Colors.black.withValues(alpha: 0.3),
           blurRadius: 4,
           offset: const Offset(0, 2),
         ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:mitic/screens/mitic2_screen.dart';
-import 'package:mitic/screens/tablero_screen.dart';
-import 'screens/select_civ.dart'; // <--- importas tu screen
+import 'package:mitic/screens/LanguageScreen.dart';
+
+import 'screens/tutorialScreen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -13,13 +13,17 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false, // <-- ESTA ES LA LÍNEA MÁGICA
       title: 'MITIC',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
       //home: const SelectCivScreen(), // <--- aquí va tu screen
       //home: const TableroScreen(), // <--- Solo para probar el diseño
-      home: const Mitic2Screen(),
+      //home: const Mitic2Screen(),
+      //home: const SelectCivScreen(),
+      //home: const TutorialScreen(),
+      home: const LanguageScreen(),
     );
   }
 }

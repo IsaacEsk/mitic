@@ -1,6 +1,4 @@
 import 'dart:math';
-import 'package:flutter/material.dart';
-import '../models/juego_model.dart';
 import '../models/guerrero_model.dart';
 import '../models/jugador_model.dart';
 import '../models/guerrero_field_model.dart';

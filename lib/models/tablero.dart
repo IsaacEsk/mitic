@@ -54,9 +54,6 @@ class Tablero {
   }
 
   // ============================================
-  // COLOCAR MONUMENTO EN SU POSICIÓN (C0)
-  // ============================================
-  // ============================================
   // COLOCAR MONUMENTO EN SU POSICIÓN
   // ============================================
   void colocarMonumento(CasillaMonumento monumento) {
@@ -133,7 +130,7 @@ class Tablero {
         String icono = _getIconoCorto(casillas[fila][col].tipo);
         linea += '$icono  ';
       }
-      print(linea + '║');
+      print('$linea║');
     }
     print('╚══════════════════════════════════╝');
   }

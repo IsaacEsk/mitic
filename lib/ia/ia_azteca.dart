@@ -2,8 +2,8 @@ import 'package:mitic/models/casilla.dart';
 
 import 'ia_base.dart';
 
-class IAMaya extends IABase {
-  IAMaya({
+class IAAzteca extends IABase {
+  IAAzteca({
     required super.juego,
     required super.yo,
     required super.enemigo,
@@ -17,252 +17,87 @@ class IAMaya extends IABase {
   });
 
   @override
+  @override
   void tomarDecision() {
-    print('🤖 IA Maya analizando situación...');
+    print('🤖 IA Azteca analizando situación...');
 
-    // ============================================
-    // MIENTRAS PUEDA INVOCAR O MEJORAR, HACERLO
-    // ============================================
-    while (_puedeInvocar() || _puedeMejorar()) {
-      // Prioridad: invocar primero
-      // Luego mejorar
-      if (_puedeMejorar()) {
-        _mejorarAlgo();
-      }
-
-      if (_puedeInvocar()) {
-        _invocarAlgo();
-      }
+    // 1. PRIORIDAD: INVOCAR CULTIVO Y ALDEANO
+    if (_faltaCultivo() && _puedeInvocarCultivo()) {
+      _invocarCultivo(0, 0, 'A0');
     }
 
-    // Cuando ya no pueda hacer nada, pasa turno
-    _pasarTurno();
-  }
-
-  bool _puedeMejorar() {
-    // Verificar si tiene puntos suficientes (mínimo 5 para mejorar)
-    if (yo.puntosAcumulados < 2) return false;
-
-    // Verificar si HAY ALGO que pueda mejorar
-    return _hayAlgoParaMejorar();
-  }
-
-  bool _hayAlgoParaMejorar() {
-    // Hospitales
-    if (_puedeMejorarHospital()) return true;
-
-    // Cultivos
-    if (_puedeMejorarCultivo()) return true;
-
-    // Torres
-    if (_puedeMejorarTorre()) return true;
-
-    // Guerreros
-    if (_puedeMejorarGuerrero()) return true;
-
-    // Aldeanos
-    if (_puedeMejorarAldeano()) return true;
-
-    return false;
-  }
-
-  bool _puedeInvocar() {
-    // Verificar si tiene puntos suficientes para el item más barato
-    final costoMinimo = _getCostoMinimo();
-    if (yo.puntosAcumulados < costoMinimo) return false;
-
-    // Verificar si HAY ALGUNA casilla vacía en GENERAL
-    if (!hayCasillasVacias()) return false;
-
-    // Verificar si HAY ALGUNA casilla válida para ALGÚN tipo
-    return _hayCasillaValidaParaAlgunTipo();
-  }
-
-  bool _hayCasillaValidaParaAlgunTipo() {
-    // Cultivos
-    if (_puedeInvocarCultivo() && _getCasillasValidas('cultivo').isNotEmpty) {
-      return true;
+    if (_faltaAldeanoA0() && _puedeInvocarAldeano()) {
+      _invocarAldeano(3, 0, 'A3');
     }
 
-    // Torres
-    if (_puedeInvocarTorre() && _getCasillasValidas('torre').isNotEmpty) {
-      return true;
-    }
-
-    // Hospitales
-    if (_puedeInvocarHospital() && _getCasillasValidas('hospital').isNotEmpty) {
-      return true;
-    }
-
-    // Aldeanos
-    if (_puedeInvocarAldeano() && _getCasillasValidas('aldeano').isNotEmpty) {
-      return true;
-    }
-
-    // Guerreros
-    if (_puedeInvocarGuerrero() && _getCasillasValidas('guerrero').isNotEmpty) {
-      return true;
-    }
-
-    return false;
-  }
-
-  int _getCostoMinimo() {
-    int minimo = 999;
-    // Buscar el costo más bajo entre todo lo que puede invocar
-    if (aldeanos != null) {
-      final aldeano = aldeanos!.values.firstWhere(
-        (a) => a.civilizacionId == yo.civilizacion.id,
-        //orElse: () => null,
-      );
-      if (aldeano.costoInvocacion < minimo) {
-        minimo = aldeano.costoInvocacion;
+    // 3. INVOCAR GUERREROS EN FILA 1
+    final guerrerosEnFila1 = _contarGuerrerosFila1();
+    if (guerrerosEnFila1 < 5) {
+      // Buscar primera columna vacía en fila 1
+      for (int col = 0; col < 5; col++) {
+        if (yo.tablero.estaVacia(1, col)) {
+          if (_puedeInvocarGuerrero()) {
+            final coordenada = yo.tablero.obtenerCoordenadas(1, col);
+            _invocarGuerrero(1, col, coordenada);
+          }
+        }
       }
     }
+    if (guerrerosEnFila1 >= 5) {
+      // Verificar si falta el aldeano en E0 (fila 0, columna 4)
+      final faltaAldeanoE0 =
+          yo.tablero.obtenerCasillaPorIndices(0, 4).tipo != TipoCasilla.aldeano;
+      if (faltaAldeanoE0 && _puedeInvocarAldeano()) {
+        _invocarAldeano(0, 4, 'E0');
+        //return;
+      }
 
-    if (cultivos != null) {
-      final cultivo = cultivos!.values.firstWhere(
-        (c) => c.civilizacionId == yo.civilizacion.id,
-        //orElse: () => null,
-      );
-      if (cultivo.costoInvocacion < minimo) {
-        minimo = cultivo.costoInvocacion;
+      // Verificar si falta la torre en D0 (fila 0, columna 3)
+      final faltaTorreD0 =
+          yo.tablero.obtenerCasillaPorIndices(0, 3).tipo != TipoCasilla.torre;
+      if (faltaTorreD0 && _puedeInvocarTorre()) {
+        _invocarTorre(0, 3, 'D0');
+        //return;
+      }
+
+      final faltaTorreB0 =
+          yo.tablero.obtenerCasillaPorIndices(0, 1).tipo != TipoCasilla.torre;
+      if (faltaTorreB0 && _puedeInvocarTorre()) {
+        _invocarTorre(0, 1, 'B0');
+        //return;
+      }
+
+      // 8. INVOCAR GUERREROS RESTANTES (filas 2 y 3)
+      if (_puedeInvocarGuerrero()) {
+        for (int fila = 2; fila <= 3; fila++) {
+          for (int col = 0; col < 5; col++) {
+            if (yo.tablero.estaVacia(fila, col)) {
+              final coordenada = yo.tablero.obtenerCoordenadas(fila, col);
+              _invocarGuerrero(fila, col, coordenada);
+              // return;
+            }
+          }
+        }
       }
     }
+    _mejorarGuerrero();
 
-    if (torres != null) {
-      final torre = torres!.values.firstWhere(
-        (t) => t.civilizacionId == yo.civilizacion.id,
-        //orElse: () => null,
-      );
-      if (torre.costoInvocacion < minimo) {
-        minimo = torre.costoInvocacion;
-      }
-    }
-
-    if (hospitales != null) {
-      final hospital = hospitales!.values.firstWhere(
-        (h) => h.civilizacionId == yo.civilizacion.id,
-        // orElse: () => null,
-      );
-      if (hospital.costoInvocacion < minimo) {
-        minimo = hospital.costoInvocacion;
-      }
-    }
-
-    // Guerreros (del jugador)
-    for (var guerrero in yo.guerrerosSeleccionados) {
-      if (guerrero.costoInvocacion < minimo) {
-        minimo = guerrero.costoInvocacion;
-      }
-    }
-
-    return minimo;
-  }
-
-  // ============================================
-  // MEJORAR ALGO (función principal)
-  // ============================================
-  void _mejorarAlgo() {
-    print('🤖 IA Maya evaluando mejoras...');
-
-    // 2. Mejorar cultivos (para más puntos)
-    if (_puedeMejorarCultivo() && random.nextInt(100) < 80) {
+    if (!_faltaCultivo() && random.nextInt(100) < 80) {
       _mejorarCultivo();
-      //return;
     }
 
-    // Prioridades de mejora según la estrategia Maya
-    // 1. Mejorar hospitales (para más curación)
-    if (_puedeMejorarHospital() &&
-        random.nextInt(100) < 80 &&
-        _puedeMejorarGuerrero()) {
-      _mejorarHospital();
-      //return;
-    }
-    // 4. Mejorar guerreros (para más ataque)
-    if (_puedeMejorarGuerrero() && random.nextInt(100) < 60) {
-      _mejorarGuerrero();
-      //return;
-    }
-
-    // 3. Mejorar torres (para más defensa)
     if (_puedeMejorarTorre() && random.nextInt(100) < 50) {
       _mejorarTorre();
       //return;
     }
 
-    // 5. Mejorar aldeanos (para más reparación)
     if (_puedeMejorarAldeano() && random.nextInt(100) < 30) {
       _mejorarAldeano();
       //return;
     }
 
-    print('🤖 IA Maya no encontró nada que mejorar');
-  }
-
-  // ============================================
-  // VERIFICACIONES DE MEJORA (CORREGIDAS)
-  // ============================================
-  bool _puedeMejorarHospital() {
-    // Buscar hospitales en el tablero
-    for (int fila = 0; fila < 4; fila++) {
-      for (int col = 0; col < 5; col++) {
-        final casilla = yo.tablero.obtenerCasillaPorIndices(fila, col);
-        if (casilla.tipo == TipoCasilla.hospital) {
-          return yo.puntosAcumulados >= 5;
-        }
-      }
-    }
-    return false;
-  }
-
-  bool _puedeMejorarCultivo() {
-    for (int fila = 0; fila < 4; fila++) {
-      for (int col = 0; col < 5; col++) {
-        final casilla = yo.tablero.obtenerCasillaPorIndices(fila, col);
-        if (casilla.tipo == TipoCasilla.cultivo) {
-          return yo.puntosAcumulados >= 5;
-        }
-      }
-    }
-    return false;
-  }
-
-  bool _puedeMejorarTorre() {
-    for (int fila = 0; fila < 4; fila++) {
-      for (int col = 0; col < 5; col++) {
-        final casilla = yo.tablero.obtenerCasillaPorIndices(fila, col);
-        if (casilla.tipo == TipoCasilla.torre) {
-          return yo.puntosAcumulados >= 5;
-        }
-      }
-    }
-    return false;
-  }
-
-  bool _puedeMejorarGuerrero() {
-    for (int fila = 0; fila < 4; fila++) {
-      for (int col = 0; col < 5; col++) {
-        final casilla = yo.tablero.obtenerCasillaPorIndices(fila, col);
-        if (casilla.tipo == TipoCasilla.guerrero) {
-          return yo.puntosAcumulados >= 5;
-        }
-      }
-    }
-    return false;
-  }
-
-  bool _puedeMejorarAldeano() {
-    for (int fila = 0; fila < 4; fila++) {
-      for (int col = 0; col < 5; col++) {
-        final casilla = yo.tablero.obtenerCasillaPorIndices(fila, col);
-        if (casilla.tipo == TipoCasilla.aldeano) {
-          return yo.puntosAcumulados >= 5;
-        }
-      }
-    }
-    return false;
+    // 7. SI NADA, PASAR TURNO
+    _pasarTurno();
   }
 
   // ============================================
@@ -329,7 +164,7 @@ class IAMaya extends IABase {
     if (puntosBase == 0) return;
 
     final elegido = cultivosEnCampo[random.nextInt(cultivosEnCampo.length)];
-    final int puntosADonar = random.nextInt(puntosBase) + 1;
+    final int puntosADonar = puntosBase;
 
     print('🤖 IA mejora cultivo en (${elegido['fila']},${elegido['columna']})');
     print('   📊 Cultivos: $cantidad, Puntos: $puntosADonar');
@@ -400,7 +235,12 @@ class IAMaya extends IABase {
     );
     print('   📊 Guerreros: $cantidad, Puntos: $puntosADonar');
 
-    onMejorar('guerrero', elegido['fila'], elegido['columna'], puntosADonar);
+    onMejorar(
+      'guerrero',
+      elegido['fila'],
+      elegido['columna'],
+      puntosADonar * 2,
+    );
   }
 
   void _mejorarAldeano() {
@@ -435,79 +275,62 @@ class IAMaya extends IABase {
     onMejorar('aldeano', elegido['fila'], elegido['columna'], puntosADonar);
   }
 
-  void _invocarAlgo() {
-    // ============================================
-    // 1. Cultivos (esquinas A0 y E0) - prioridad máxima
-    // ============================================
-    if (_puedeInvocarCultivo() && random.nextInt(100) < 99) {
-      final casillasValidas = _getCasillasValidas('cultivo');
-      if (casillasValidas.isNotEmpty) {
-        final casilla = casillasValidas[random.nextInt(casillasValidas.length)];
-        final fila = casilla['fila']!;
-        final columna = casilla['columna']!;
-        final coordenada = yo.tablero.obtenerCoordenadas(fila, columna);
-        _invocarCultivo(fila, columna, coordenada);
-        return;
-      }
-    }
+  // Verifica si falta el cultivo en C0
+  bool _faltaCultivo() {
+    final casilla = yo.tablero.obtenerCasillaPorIndices(0, 0);
+    return casilla.tipo != TipoCasilla.cultivo;
+  }
 
-    // ============================================
-    // 4. Aldeanos (B0 y D0)
-    // ============================================
-    if (_puedeInvocarAldeano() && random.nextInt(100) < 40) {
-      final casillasValidas = _getCasillasValidas('aldeano');
-      if (casillasValidas.isNotEmpty) {
-        final casilla = casillasValidas[random.nextInt(casillasValidas.length)];
-        final fila = casilla['fila']!;
-        final columna = casilla['columna']!;
-        final coordenada = yo.tablero.obtenerCoordenadas(fila, columna);
-        _invocarAldeano(fila, columna, coordenada);
-        return;
-      }
-    }
+  // Verifica si falta el aldeano en A0
+  bool _faltaAldeanoA0() {
+    final casilla = yo.tablero.obtenerCasillaPorIndices(3, 0);
+    return casilla.tipo != TipoCasilla.aldeano;
+  }
 
-    // ============================================
-    // 5. Guerreros (llenar filas 2 y 3)
-    // ============================================
-    if (_puedeInvocarGuerrero() && random.nextInt(100) < 60) {
-      final casillasValidas = _getCasillasValidas('guerrero');
-      if (casillasValidas.isNotEmpty) {
-        final casilla = casillasValidas[random.nextInt(casillasValidas.length)];
-        final fila = casilla['fila']!;
-        final columna = casilla['columna']!;
-        final coordenada = yo.tablero.obtenerCoordenadas(fila, columna);
-        _invocarGuerrero(fila, columna, coordenada);
-        return;
+  // Verifica si falta el hospital en H0
+  bool _faltaHospital() {
+    final casilla = yo.tablero.obtenerCasillaPorIndices(0, 1);
+    return casilla.tipo != TipoCasilla.hospital;
+  }
+
+  // Verifica si falta la torre en T0
+  bool _faltaTorre() {
+    final casilla = yo.tablero.obtenerCasillaPorIndices(0, 3);
+    return casilla.tipo != TipoCasilla.torre;
+  }
+
+  bool _puedeMejorarTorre() {
+    for (int fila = 0; fila < 4; fila++) {
+      for (int col = 0; col < 5; col++) {
+        final casilla = yo.tablero.obtenerCasillaPorIndices(fila, col);
+        if (casilla.tipo == TipoCasilla.torre) {
+          return yo.puntosAcumulados >= 5;
+        }
       }
     }
-    // ============================================
-    // 3. Hospitales (fila 1 completa)
-    // ============================================
-    if (_puedeInvocarHospital() && random.nextInt(100) < 90) {
-      final casillasValidas = _getCasillasValidas('hospital');
-      if (casillasValidas.isNotEmpty) {
-        final casilla = casillasValidas[random.nextInt(casillasValidas.length)];
-        final fila = casilla['fila']!;
-        final columna = casilla['columna']!;
-        final coordenada = yo.tablero.obtenerCoordenadas(fila, columna);
-        _invocarHospital(fila, columna, coordenada);
-        return;
+    return false;
+  }
+
+  bool _puedeMejorarAldeano() {
+    for (int fila = 0; fila < 4; fila++) {
+      for (int col = 0; col < 5; col++) {
+        final casilla = yo.tablero.obtenerCasillaPorIndices(fila, col);
+        if (casilla.tipo == TipoCasilla.aldeano) {
+          return yo.puntosAcumulados >= 2;
+        }
       }
     }
-    // ============================================
-    // 2. Torres (A3 y E3)
-    // ============================================
-    if (_puedeInvocarTorre() && random.nextInt(100) < 50) {
-      final casillasValidas = _getCasillasValidas('torre');
-      if (casillasValidas.isNotEmpty) {
-        final casilla = casillasValidas[random.nextInt(casillasValidas.length)];
-        final fila = casilla['fila']!;
-        final columna = casilla['columna']!;
-        final coordenada = yo.tablero.obtenerCoordenadas(fila, columna);
-        _invocarTorre(fila, columna, coordenada);
-        return;
-      }
+    return false;
+  }
+
+  // Cuenta cuántos guerreros hay en la fila 1 (segunda fila)
+  int _contarGuerrerosFila1() {
+    int count = 0;
+    for (int col = 0; col < 5; col++) {
+      final casilla = yo.tablero.obtenerCasillaPorIndices(1, col);
+      if (casilla.tipo == TipoCasilla.guerrero) count++;
     }
+    return count;
   }
 
   // ============================================
@@ -515,8 +338,8 @@ class IAMaya extends IABase {
   // ============================================
   bool _posicionTorreOcupada() {
     // Torres van en A3 y E3
-    final torreA3 = yo.tablero.obtenerCasillaPorIndices(3, 0);
-    final torreE3 = yo.tablero.obtenerCasillaPorIndices(3, 4);
+    final torreA3 = yo.tablero.obtenerCasillaPorIndices(0, 1);
+    final torreE3 = yo.tablero.obtenerCasillaPorIndices(0, 3);
 
     // Retorna true solo si AMBAS están ocupadas
     return (torreA3.tipo == TipoCasilla.torre &&
@@ -629,78 +452,6 @@ class IAMaya extends IABase {
   }
 
   // ============================================
-  // OBTENER CASILLAS VÁLIDAS SEGÚN EL TIPO DE ESTRUCTURA
-  // ============================================
-  List<Map<String, int>> _getCasillasValidas(String tipo) {
-    final List<Map<String, int>> casillas = [];
-
-    switch (tipo) {
-      case 'torre':
-        // Torres solo en A3 y E3
-        final posiciones = [
-          {'fila': 3, 'columna': 0}, // A3
-          {'fila': 3, 'columna': 4}, // E3
-        ];
-        for (var pos in posiciones) {
-          if (yo.tablero.estaVacia(pos['fila']!, pos['columna']!)) {
-            casillas.add(pos);
-          }
-        }
-        break;
-
-      case 'hospital':
-        // Hospitales en toda la fila 1 (A1 a E1)
-        for (int col = 0; col < 5; col++) {
-          if (yo.tablero.estaVacia(1, col)) {
-            casillas.add({'fila': 1, 'columna': col});
-          }
-        }
-        break;
-
-      case 'aldeano':
-        // Aldeanos en B0 y D0
-        final posiciones = [
-          {'fila': 0, 'columna': 1}, // B0
-          {'fila': 0, 'columna': 3}, // D0
-        ];
-        for (var pos in posiciones) {
-          if (yo.tablero.estaVacia(pos['fila']!, pos['columna']!)) {
-            casillas.add(pos);
-          }
-        }
-        break;
-
-      case 'cultivo':
-        // Cultivos en A0 y E0
-        final posiciones = [
-          {'fila': 0, 'columna': 0}, // A0
-          {'fila': 0, 'columna': 4}, // E0
-        ];
-        for (var pos in posiciones) {
-          if (yo.tablero.estaVacia(pos['fila']!, pos['columna']!)) {
-            casillas.add(pos);
-          }
-        }
-        break;
-
-      case 'guerrero':
-        // Guerreros en fila 2 completa y fila 3 centro (excepto torres)
-        for (int fila = 2; fila <= 3; fila++) {
-          for (int col = 0; col < 5; col++) {
-            // Evitar posiciones de torre (A3 y E3)
-            if (fila == 3 && (col == 0 || col == 4)) continue;
-            if (yo.tablero.estaVacia(fila, col)) {
-              casillas.add({'fila': fila, 'columna': col});
-            }
-          }
-        }
-        break;
-    }
-
-    return casillas;
-  }
-
-  // ============================================
   // INVOCACIONES
   // ============================================
   void _invocarGuerrero(int fila, int columna, String coordenada) {
@@ -720,6 +471,12 @@ class IAMaya extends IABase {
   }
 
   void _invocarAldeano(int fila, int columna, String coordenada) {
+    // 👇 VERIFICAR QUE LA CASILLA ESTÉ VACÍA
+    if (!yo.tablero.estaVacia(fila, columna)) {
+      print('⚠️ Casilla $coordenada ocupada, no se puede invocar aldeano');
+      return;
+    }
+
     if (aldeanos == null) return;
     final aldeano = aldeanos!.values.firstWhere(
       (a) => a.civilizacionId == yo.civilizacion.id,
@@ -729,6 +486,12 @@ class IAMaya extends IABase {
   }
 
   void _invocarCultivo(int fila, int columna, String coordenada) {
+    // 👇 VERIFICAR QUE LA CASILLA ESTÉ VACÍA
+    if (!yo.tablero.estaVacia(fila, columna)) {
+      print('⚠️ Casilla $coordenada ocupada, no se puede invocar cultivo');
+      return;
+    }
+
     if (cultivos == null) return;
     final cultivo = cultivos!.values.firstWhere(
       (c) => c.civilizacionId == yo.civilizacion.id,
@@ -738,6 +501,12 @@ class IAMaya extends IABase {
   }
 
   void _invocarTorre(int fila, int columna, String coordenada) {
+    // 👇 VERIFICAR QUE LA CASILLA ESTÉ VACÍA
+    if (!yo.tablero.estaVacia(fila, columna)) {
+      print('⚠️ Casilla $coordenada ocupada, no se puede invocar torre');
+      return;
+    }
+
     if (torres == null) return;
     final torre = torres!.values.firstWhere(
       (t) => t.civilizacionId == yo.civilizacion.id,
@@ -756,7 +525,7 @@ class IAMaya extends IABase {
   }
 
   void _pasarTurno() {
-    print('🤖 IA Maya pasa turno');
+    print('🤖 IA Azteca pasa turno');
     onPasarTurno();
   }
 }

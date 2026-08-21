@@ -5,7 +5,9 @@ class AldeanoCampo {
   int vidaActual;
   int puntosReconstruccionActual;
   String coordenada;
+  bool animar = false; // 👈 NUEVO
   bool yaActuoEsteTurno;
+  bool resplandor = false;
 
   AldeanoCampo({
     required this.aldeanoBase,
@@ -13,6 +15,7 @@ class AldeanoCampo {
     required this.puntosReconstruccionActual,
     required this.coordenada,
     this.yaActuoEsteTurno = false,
+    this.animar = false,
   });
 
   factory AldeanoCampo.desdeAldeano({
@@ -36,7 +39,8 @@ class AldeanoCampo {
     return AldeanoCampo(
       aldeanoBase: aldeanoBase,
       vidaActual: vidaActual ?? this.vidaActual,
-      puntosReconstruccionActual: puntosReconstruccionActual ?? this.puntosReconstruccionActual,
+      puntosReconstruccionActual:
+          puntosReconstruccionActual ?? this.puntosReconstruccionActual,
       coordenada: coordenada ?? this.coordenada,
       yaActuoEsteTurno: yaActuoEsteTurno ?? this.yaActuoEsteTurno,
     );

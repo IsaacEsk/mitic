@@ -22,77 +22,97 @@ class AldeanoTablero extends StatelessWidget {
 
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        width: ladoCelda,
-        height: ladoCelda,
-        child: Stack(
-          children: [
-            Positioned(
-              top: margenSuperior,
-              left: (ladoCelda - imagenSize) / 2,
-              child: Container(
-                width: imagenSize,
-                height: imagenSize,
-                decoration: BoxDecoration(
-                  color: Colors.brown[300],
-                  borderRadius: BorderRadius.circular(8),
-                  image: DecorationImage(
-                    image: AssetImage(aldeano.aldeanoBase.imagen),
-                    fit: BoxFit.cover,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        decoration: BoxDecoration(
+          boxShadow:
+              aldeano.resplandor
+                  ? [
+                    BoxShadow(
+                      color: Colors.red.withValues(alpha: 0.8),
+                      blurRadius: 15,
+                      spreadRadius: 5,
+                    ),
+                  ]
+                  : null,
+        ),
+        child: SizedBox(
+          width: ladoCelda,
+          height: ladoCelda,
+          child: Stack(
+            children: [
+              // Imagen animada (se encoge y vuelve - efecto martillazo)
+              Positioned(
+                top: margenSuperior,
+                left: (ladoCelda - imagenSize) / 2,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 100),
+                  width: aldeano.animar ? imagenSize * 0.5 : imagenSize,
+                  height: aldeano.animar ? imagenSize * 0.5 : imagenSize,
+                  curve: Curves.easeOutBack,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.brown[600],
+                      borderRadius: BorderRadius.circular(12),
+                      image: DecorationImage(
+                        image: AssetImage(aldeano.aldeanoBase.imagen),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                height: statHeight,
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.6),
-                  borderRadius: const BorderRadius.vertical(
-                    bottom: Radius.circular(8),
+
+              // Stats (siempre iguales)
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  height: statHeight,
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.6),
+                    borderRadius: const BorderRadius.vertical(
+                      bottom: Radius.circular(12),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      Row(
+                        children: [
+                          Text('🔨', style: TextStyle(fontSize: statIconSize)),
+                          const SizedBox(width: 2),
+                          Text(
+                            '${aldeano.puntosReconstruccionActual}',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: statHeight * 0.5,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          Text('👨', style: TextStyle(fontSize: statIconSize)),
+                          const SizedBox(width: 2),
+                          Text(
+                            '${aldeano.vidaActual}',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: statHeight * 0.5,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    // RECONSTRUCCIÓN
-                    Row(
-                      children: [
-                        Text('🔨', style: TextStyle(fontSize: statIconSize)),
-                        const SizedBox(width: 2),
-                        Text(
-                          '${aldeano.puntosReconstruccionActual}',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: statHeight * 0.5,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    // VIDA
-                    Row(
-                      children: [
-                        Text('👨', style: TextStyle(fontSize: statIconSize)),
-                        const SizedBox(width: 2),
-                        Text(
-                          '${aldeano.vidaActual}',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: statHeight * 0.5,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

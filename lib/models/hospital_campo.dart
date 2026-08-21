@@ -5,12 +5,15 @@ class HospitalCampo {
   int vidaActual;
   int poderCuracionActual;
   String coordenada;
+  bool animar = false;
+  bool resplandor = false;
 
   HospitalCampo({
     required this.hospitalBase,
     required this.vidaActual,
     required this.poderCuracionActual,
     required this.coordenada,
+    this.animar = false,
   });
 
   factory HospitalCampo.desdeHospital({

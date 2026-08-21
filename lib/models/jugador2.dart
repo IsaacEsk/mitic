@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:mitic/models/casilla.dart';
 import 'package:mitic/models/civilizacion_model.dart';
 import 'package:mitic/models/guerrero_model.dart';

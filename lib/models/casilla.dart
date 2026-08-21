@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:mitic/models/aldeano_campo.dart';
 import 'package:mitic/models/cultivo_campo.dart';
 import 'package:mitic/models/guerrero_field_model_2.0.dart';
@@ -43,6 +42,7 @@ class CasillaMonumento extends Casilla {
   final String nombre;
   int vidaActual;
   final String imagenPath;
+  bool resplandor = false;
 
   CasillaMonumento({
     required super.coordenada,
@@ -50,6 +50,7 @@ class CasillaMonumento extends Casilla {
     required this.nombre,
     required this.vidaActual,
     required this.imagenPath,
+    this.resplandor = false,
   }) : super(tipo: TipoCasilla.monumento);
 }
 

@@ -6,6 +6,8 @@ class TorreCampo {
   int ataqueActual;
   bool yaAtacoEsteTurno;
   String coordenada;
+  bool animar = false; // 👈 NUEVO
+  bool resplandor = false;
 
   TorreCampo({
     required this.torreBase,
@@ -13,6 +15,7 @@ class TorreCampo {
     required this.ataqueActual,
     this.yaAtacoEsteTurno = false,
     required this.coordenada,
+    this.animar = false,
   });
 
   // Constructor desde Torre base

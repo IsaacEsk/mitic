@@ -1,0 +1,92 @@
+[
+  {
+    "id": "cultivo_azteca",
+    "civilizacion_id": "azteca",
+    "nombre": "Chinampa Azteca",
+    "vida": 3,
+    "puntos_por_turno": 2,
+    "costo_invocacion": 2,
+    "imagen": "assets/images/cultivos/cultivo_azteca.png"
+  },
+  {
+    "id": "cultivo_maya",
+    "civilizacion_id": "maya",
+    "nombre": "Milpa Maya",
+    "vida": 2,
+    "puntos_por_turno": 2,
+    "costo_invocacion": 2,
+    "imagen": "assets/images/cultivos/cultivo_maya.png"
+  },
+  {
+    "id": "cultivo_romanos",
+    "civilizacion_id": "romanos",
+    "nombre": "Latifundio Romano",
+    "vida": 3,
+    "puntos_por_turno": 1,
+    "costo_invocacion": 1,
+    "imagen": "assets/images/cultivos/cultivo_romano.png"
+  },
+  {
+    "id": "cultivo_egipcios",
+    "civilizacion_id": "egipcios",
+    "nombre": "Delta del Nilo",
+    "vida": 2,
+    "puntos_por_turno": 2,
+    "costo_invocacion": 2,
+    "imagen": "assets/images/cultivos/cultivo_egipcio.png"
+  },
+  {
+    "id": "cultivo_francia",
+    "civilizacion_id": "francia",
+    "nombre": "Viñedo Francés",
+    "vida": 2,
+    "puntos_por_turno": 1,
+    "costo_invocacion": 1,
+    "imagen": "assets/images/cultivos/cultivo_frances.png"
+  },
+  {
+    "id": "cultivo_jerusalen",
+    "civilizacion_id": "jerusalen",
+    "nombre": "Huerto de Jerusalén",
+    "vida": 2,
+    "puntos_por_turno": 1,
+    "costo_invocacion": 1,
+    "imagen": "assets/images/cultivos/cultivo_jerusalen.png"
+  },
+  {
+    "id": "cultivo_sarracenos",
+    "civilizacion_id": "sarracenos",
+    "nombre": "Oasis Sarraceno",
+    "vida": 3,
+    "puntos_por_turno": 1,
+    "costo_invocacion": 1,
+    "imagen": "assets/images/cultivos/cultivo_sarraceno.png"
+  },
+  {
+    "id": "cultivo_india",
+    "civilizacion_id": "india",
+    "nombre": "Arrozal Indio",
+    "vida": 2,
+    "puntos_por_turno": 2,
+    "costo_invocacion": 2,
+    "imagen": "assets/images/cultivos/cultivo_indio.png"
+  },
+  {
+    "id": "cultivo_china",
+    "civilizacion_id": "china",
+    "nombre": "Arrozal Chino",
+    "vida": 3,
+    "puntos_por_turno": 2,
+    "costo_invocacion": 2,
+    "imagen": "assets/images/cultivos/cultivo_chino.png"
+  },
+  {
+    "id": "cultivo_japon",
+    "civilizacion_id": "japon",
+    "nombre": "Campo de Arroz",
+    "vida": 2,
+    "puntos_por_turno": 1,
+    "costo_invocacion": 1,
+    "imagen": "assets/images/cultivos/cultivo_japones.png"
+  }
+]

@@ -1,0 +1,15 @@
+Tutorial 
+
+1: Bienvenida 
+2: Selecciona tu civilizacion 
+3: Objetivo del juego 
+4: Turnos 
+5: Elemento Aldeano 
+6: Elemento Cultivo 
+7: Elemento hospitales
+8: Elemento Torres
+9: Elemento Guerrero
+10: Mejoras 
+11: Movimiento 
+12: Eventos 
+

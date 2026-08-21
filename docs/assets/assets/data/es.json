@@ -39,7 +39,7 @@
   "japon_desc": "Guerrero feudal japonés que seguía el código del bushido: lealtad, honor y disciplina. Experto en el manejo de la katana, servía a su señor con devoción y practicaba artes marciales y meditación.",
   "japon_civ": "Japón",
 
- "muralla_azteca_desc": "Centro ceremonial y espiritual de la capital mexica. Desde aquí, Huitzilopochtli guía a su pueblo.",
+  "muralla_azteca_desc": "Centro ceremonial y espiritual de la capital mexica. Desde aquí, Huitzilopochtli guía a su pueblo.",
   "muralla_maya_desc": "La pirámide de Kukulkán, donde la serpiente emplumada desciende cada equinoccio.",
   "muralla_romanos_desc": "El anfiteatro más grande del Imperio Romano, testigo de innumerables batallas de gladiadores.",
   "muralla_egipcios_desc": "Tumbas monumentales que guardan los secretos de los faraones y su viaje al más allá.",
@@ -59,5 +59,37 @@
   "habilidad_sarracenos": "Tus guerreros hacen 5% más daño al atacar monumentos",
   "habilidad_india": "Al inicio de tu turno, todos tus guerreros ganan +5 vida",
   "habilidad_china": "Puedes invocar 4 guerreros en el campo (en lugar de 3)",
-  "habilidad_japon": "Si sacas dobles, sumas puntos y vuelves a tirar los dados"
+  "habilidad_japon": "Si sacas dobles, sumas puntos y vuelves a tirar los dados",
+
+  "tutorial_titulo_1": "Bienvenida",
+  "tutorial_desc_1": "Bienvenido a Mitic, un juego de estrategia por turnos donde las civilizaciones luchan por la supremacía.",
+  "tutorial_titulo_2": "Selecciona tu civilización",
+  "tutorial_desc_2": "Elige una de las 10 civilizaciones disponibles. Cada una tiene su propio monumento, guerrero principal y habilidad especial.",
+  "tutorial_titulo_3": "Objetivo del juego",
+  "tutorial_desc_3": "Destruye el monumento enemigo mientras proteges el tuyo. Cada jugador comienza con 0 puntos de invocación y deberá acumularlos para construir su imperio.",
+  "tutorial_titulo_4": "Turnos",
+  "tutorial_desc_4": "En cada turno, lanzas los dados para obtener puntos de invocación. Estos puntos se acumulan y los verás en la parte inferior del tablero con el símbolo de un rayo ⚡. Úsalos para invocar o mejorar tus elementos. Recuerda que cada elemento tiene un costo diferente.",
+  "tutorial_titulo_5": "Elemento: Aldeano",
+  "tutorial_desc_5": "El aldeano reconstruye todos los edificios (hospitales,torres, monumentos)y cultivos en su fila y columna. Suma sus puntos de reconstrucción a la vida de esos elementos.",
+  "tutorial_titulo_6": "Elemento: Cultivo",
+  "tutorial_desc_6": "Al inicio de cada turno, los cultivos generan puntos de invocación. Te dan puntos extras para invocar o mejorar.",
+  "tutorial_titulo_7": "Elemento: Hospital",
+  "tutorial_desc_7": "El hospital cura a los aldeanos y guerreros en su misma fila y columna al inicio de cada turno, sumando sus puntos de curación a su vida.",
+  "tutorial_titulo_8": "Elemento: Torre",
+  "tutorial_desc_8": "La torre ataca al inicio de cada turno, restando sus puntos de ataque al primer elemento enemigo en su misma fila.",
+  "tutorial_titulo_9": "Elemento: Guerrero",
+  "tutorial_desc_9": "Los guerreros atacan al enemigo. Restan su ataque al objetivo inmediato en su fila. Si el oponente no tiene elementos, pueden atacar el monumento desde cualquier casilla. Solo atacan una vez por turno (lo verás con el símbolo de espadas 🗡️).",
+  "tutorial_titulo_10": "Mejoras",
+  "tutorial_desc_10": "Usa tus puntos de invocación para mejorar la salud o el desempeño de tus elementos.",
+  "tutorial_titulo_11": "Movimiento",
+  "tutorial_desc_11": "Los aldeanos y guerreros son los únicos elementos que se pueden mover. Úsalos estratégicamente para defender o atacar.",
+  "tutorial_titulo_12": "Eventos",
+  "tutorial_desc_12": "Durante la partida pueden ocurrir eventos especiales que cambian el curso del juego. Terremotos que destruyen edificios,plagas que eliminan los cultivos y epidemas que dañan a los guerreros y aldeanos. Mantente alerta y adapta tu estrategia.",
+
+  "tutorial_boton_saltar": "Saltar",
+  "tutorial_boton_atras": "Atrás",
+  "tutorial_boton_siguiente": "Siguiente",
+  "tutorial_boton_comenzar": "Comenzar",
+
+  "select_civ_titulo": "SELECCIONA TU CIVILIZACIÓN"
 }

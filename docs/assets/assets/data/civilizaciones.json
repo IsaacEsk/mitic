@@ -1,10 +1,10 @@
 [
   {
     "id": "azteca",
-    "nombre": "Azteca",
+    "nombre_id": "azteca_civ",
     "personaje_principal_id": "azteca_001",
     "muralla": {
-      "nombre": "Templo Mayor",
+      "nombre_id": "azteca_muralla",
       "vida": 750,
       "imagen": "assets/images/monumentos/templo_mayor.png",
       "descripcion_id": "muralla_azteca_desc"
@@ -13,10 +13,10 @@
   },
   {
     "id": "maya",
-    "nombre": "Maya",
+    "nombre_id": "maya_civ",
     "personaje_principal_id": "maya_001",
     "muralla": {
-      "nombre": "Chichén Itzá",
+      "nombre_id": "maya_muralla",
       "vida": 750,
       "imagen": "assets/images/monumentos/chichen_itza.png",
       "descripcion_id": "muralla_maya_desc"
@@ -25,10 +25,10 @@
   },
   {
     "id": "romanos",
-    "nombre": "Romanos",
+    "nombre_id": "romanos_civ",
     "personaje_principal_id": "romanos_001",
     "muralla": {
-      "nombre": "El Coliseo",
+      "nombre_id": "romanos_muralla",
       "vida": 900,
       "imagen": "assets/images/monumentos/coliseo.png",
       "descripcion_id": "muralla_romanos_desc"
@@ -37,10 +37,10 @@
   },
   {
     "id": "egipcios",
-    "nombre": "Egipcios",
+    "nombre_id": "egipcios_civ",
     "personaje_principal_id": "egipcios_001",
     "muralla": {
-      "nombre": "Las Pirámides",
+      "nombre_id": "egipcios_muralla",
       "vida": 900,
       "imagen": "assets/images/monumentos/piramides.png",
       "descripcion_id": "muralla_egipcios_desc"
@@ -49,10 +49,10 @@
   },
   {
     "id": "francia",
-    "nombre": "Francia",
+    "nombre_id": "francia_civ",
     "personaje_principal_id": "francia_001",
     "muralla": {
-      "nombre": "Torre Eiffel",
+      "nombre_id": "francia_muralla",
       "vida": 600,
       "imagen": "assets/images/monumentos/torre_eiffel.png",
       "descripcion_id": "muralla_francia_desc"
@@ -61,10 +61,10 @@
   },
   {
     "id": "jerusalen",
-    "nombre": "Jerusalén",
+    "nombre_id": "jerusalen_civ",
     "personaje_principal_id": "jerusalen_001",
     "muralla": {
-      "nombre": "Murallas de Jerusalén",
+      "nombre_id": "jerusalen_muralla",
       "vida": 700,
       "imagen": "assets/images/monumentos/murallas_jerusalen.png",
       "descripcion_id": "muralla_jerusalen_desc"
@@ -73,10 +73,10 @@
   },
   {
     "id": "sarracenos",
-    "nombre": "Sarracenos",
+    "nombre_id": "sarracenos_civ",
     "personaje_principal_id": "sarracenos_001",
     "muralla": {
-      "nombre": "Mezquita de Jerusalén",
+      "nombre_id": "sarracenos_muralla",
       "vida": 700,
       "imagen": "assets/images/monumentos/mezquita.png",
       "descripcion_id": "muralla_sarracenos_desc"
@@ -85,10 +85,10 @@
   },
   {
     "id": "india",
-    "nombre": "India",
+    "nombre_id": "india_civ",
     "personaje_principal_id": "india_001",
     "muralla": {
-      "nombre": "Taj Mahal",
+      "nombre_id": "india_muralla",
       "vida": 800,
       "imagen": "assets/images/monumentos/taj_mahal.png",
       "descripcion_id": "muralla_india_desc"
@@ -97,10 +97,10 @@
   },
   {
     "id": "china",
-    "nombre": "China",
+    "nombre_id": "china_civ",
     "personaje_principal_id": "china_001",
     "muralla": {
-      "nombre": "La Gran Muralla",
+      "nombre_id": "china_muralla",
       "vida": 1000,
       "imagen": "assets/images/monumentos/muralla_china.png",
       "descripcion_id": "muralla_china_desc"
@@ -109,10 +109,10 @@
   },
   {
     "id": "japon",
-    "nombre": "Japón",
+    "nombre_id": "japon_civ",
     "personaje_principal_id": "japon_001",
     "muralla": {
-      "nombre": "Castillo de Osaka",
+      "nombre_id": "japon_muralla",
       "vida": 850,
       "imagen": "assets/images/monumentos/castillo_osaka.png",
       "descripcion_id": "muralla_japon_desc"

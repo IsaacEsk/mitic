@@ -5,7 +5,12 @@ import '../models/civilizacion_model.dart';
 import '../models/guerrero_model.dart';
 
 class SelectCivScreen extends StatefulWidget {
-  const SelectCivScreen({super.key});
+  final String selectedLanguage; // 👈 NUEVO: recibir el idioma
+
+  const SelectCivScreen({
+    super.key,
+    required this.selectedLanguage, // 👈 NUEVO
+  });
 
   @override
   State<SelectCivScreen> createState() => _SelectCivScreenState();
@@ -16,25 +21,119 @@ class _SelectCivScreenState extends State<SelectCivScreen> {
   Map<String, Guerrero> _guerreros = {};
   Map<String, String> _translations = {};
   bool _cargando = true;
+  bool _imagenesListas = false;
+  String _mensajeCarga = '';
 
   @override
   void initState() {
     super.initState();
+    _mensajeCarga = _textoCarga(
+      'cargando_datos',
+      'Cargando datos...',
+      'Loading data...',
+    );
     _cargarDatos();
   }
 
   Future<void> _cargarDatos() async {
-    final data = await Mitic2DataService.cargarTodo();
-    final civs = data['civilizaciones'] as Map<String, Civilizacion>;
-    final guerreros = data['guerreros'] as Map<String, Guerrero>;
-    final translations = data['translations'] as Map<String, String>;
-
-    setState(() {
-      _civilizaciones = civs.values.toList();
-      _guerreros = guerreros;
+    try {
+      final translations = await Mitic2DataService.cargarTraducciones(
+        widget.selectedLanguage,
+      );
       _translations = translations;
-      _cargando = false;
-    });
+
+      setState(() {
+        _mensajeCarga = _textoCarga(
+          'cargando_civilizaciones',
+          'Cargando civilizaciones...',
+          'Loading civilizations...',
+        );
+      });
+
+      final data = await Mitic2DataService.cargarTodo();
+      final civs = data['civilizaciones'] as Map<String, Civilizacion>;
+      final guerrerosBase = data['guerreros'] as Map<String, Guerrero>;
+
+      final guerreros = guerrerosBase.map(
+        (id, guerrero) => MapEntry(
+          id,
+          Guerrero(
+            id: guerrero.id,
+            nombreId: translations[guerrero.nombreId] ?? guerrero.nombreId,
+            descripcionId:
+                translations[guerrero.descripcionId] ?? guerrero.descripcionId,
+            civilizacionId: guerrero.civilizacionId,
+            ataque: guerrero.ataque,
+            vida: guerrero.vida,
+            costoInvocacion: guerrero.costoInvocacion,
+            imagen: guerrero.imagen,
+          ),
+        ),
+      );
+
+      setState(() {
+        _civilizaciones = civs.values.toList();
+        _guerreros = guerreros;
+        _translations = translations;
+      });
+
+      setState(() {
+        _mensajeCarga = _textoCarga(
+          'precargando_imagenes',
+          'Precargando imágenes...',
+          'Preloading images...',
+        );
+      });
+
+      await _precacheAllImages();
+
+      setState(() {
+        _imagenesListas = true;
+        _cargando = false;
+      });
+    } catch (e) {
+      print('❌ Error cargando datos: $e');
+      setState(() {
+        _mensajeCarga = _textoCarga(
+          'error_carga',
+          'Error cargando datos',
+          'Error loading data',
+        );
+        _cargando = false;
+      });
+    }
+  }
+
+  String _textoCarga(String clave, String espanol, String ingles) {
+    return _translations[clave] ??
+        (widget.selectedLanguage == 'en' ? ingles : espanol);
+  }
+
+  Future<void> _precacheAllImages() async {
+    final List<String> monumentosPaths =
+        _civilizaciones.map((civ) {
+          return civ.muralla.imagen;
+        }).toList();
+
+    final List<String> guerrerosPaths =
+        _guerreros.values.map((guerrero) {
+          return guerrero.imagen;
+        }).toList();
+
+    final List<String> allPaths = [...monumentosPaths, ...guerrerosPaths];
+    final uniquePaths = allPaths.toSet().toList();
+
+    final List<Future> precacheFutures =
+        uniquePaths.map((path) {
+          return precacheImage(AssetImage(path), context);
+        }).toList();
+
+    try {
+      await Future.wait(precacheFutures);
+      print('✅ Imágenes precargadas: ${uniquePaths.length}');
+    } catch (e) {
+      print('⚠️ Error precargando algunas imágenes: $e');
+    }
   }
 
   @override
@@ -42,95 +141,117 @@ class _SelectCivScreenState extends State<SelectCivScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[900],
       body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final double ancho = constraints.maxWidth;
-            final double alto = constraints.maxHeight;
-
-            if (_cargando) {
-              return const Center(
-                child: CircularProgressIndicator(color: Colors.white70),
-              );
-            }
-
-            // Determinar número de columnas según el ancho
-            int crossAxisCount = ancho > 900 ? 2 : (ancho > 600 ? 2 : 1);
-
-            return Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  // Título
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    // decoration: BoxDecoration(
-                    //   color: Colors.gre[800],
-                    //   borderRadius: BorderRadius.circular(30),
-                    //   //border: Border.all(color: Colors.amber, width: 2),
-                    // ),
-                    child: const Text(
-                      'SELECCIONA TU CIVILIZACIÓN',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 2,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Grid de civilizaciones
-                  Expanded(
-                    child: GridView.builder(
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: crossAxisCount,
-                        childAspectRatio: 1.8, // Rectangular horizontal
-                        crossAxisSpacing: 16,
-                        mainAxisSpacing: 16,
-                      ),
-                      itemCount: _civilizaciones.length,
-                      itemBuilder: (context, index) {
-                        final civ = _civilizaciones[index];
-                        final guerreroPrincipal = _guerreros['${civ.id}_001'];
-                        return _buildCivCard(civ, guerreroPrincipal);
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        ),
+        child: _cargando ? _buildLoadingScreen() : _buildMainContent(),
       ),
     );
   }
 
+  Widget _buildLoadingScreen() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const CircularProgressIndicator(
+            color: Colors.white70,
+            strokeWidth: 3,
+          ),
+          const SizedBox(height: 24),
+          Text(
+            _mensajeCarga,
+            style: const TextStyle(color: Colors.white70, fontSize: 16),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '⚔️ Mitic',
+            style: TextStyle(color: Colors.grey[600], fontSize: 12),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMainContent() {
+    // 👇 OBTENER TÍTULO TRADUCIDO
+    final String titulo =
+        _translations['select_civ_titulo'] ??
+        (widget.selectedLanguage == 'es'
+            ? 'SELECCIONA TU CIVILIZACIÓN'
+            : 'SELECT YOUR CIVILIZATION');
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final double ancho = constraints.maxWidth;
+        final double alto = constraints.maxHeight;
+
+        int crossAxisCount = ancho > 900 ? 2 : (ancho > 600 ? 2 : 1);
+
+        return Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              // Título con traducción 👇
+              Container(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  titulo,
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 2,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              Expanded(
+                child: GridView.builder(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: crossAxisCount,
+                    childAspectRatio: 1.8,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                  ),
+                  itemCount: _civilizaciones.length,
+                  itemBuilder: (context, index) {
+                    final civ = _civilizaciones[index];
+                    final guerreroPrincipal = _guerreros['${civ.id}_001'];
+                    return _buildCivCard(civ, guerreroPrincipal);
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildCivCard(Civilizacion civ, Guerrero? guerrero) {
-    final civNombre = _translations[civ.id] ?? civ.nombre;
+    final civNombre = _translations[civ.nombreId] ?? civ.nombreId;
 
     return GestureDetector(
       onTap: () {
-        print('🎮 Civilización seleccionada: ${civ.nombre}');
+        print('🎮 Civilización seleccionada: $civNombre');
         Navigator.push(
           context,
           MaterialPageRoute(
             builder:
-                (context) => SelectAliadosScreen(civilizacionSeleccionada: civ),
+                (context) => SelectAliadosScreen(
+                  civilizacionSeleccionada: civ,
+                  // 👇 PASAR EL IDIOMA A LA SIGUIENTE PANTALLA
+                  selectedLanguage: widget.selectedLanguage,
+                ),
           ),
         );
       },
       child: LayoutBuilder(
         builder: (context, constraints) {
-          // 👇 TAMAÑO DISPONIBLE PARA LA CARD
           final double cardHeight = constraints.maxHeight;
           final double cardWidth = constraints.maxWidth;
 
-          // 👇 PROPORCIONES
-          final double izquierdoWidth = cardWidth * 0.35; // 35% para monumento
-          final double derechaWidth = cardWidth * 0.65; // 65% para info
-          final double imagenSize =
-              izquierdoWidth * 0.7; // 70% del ancho izquierdo
+          final double izquierdoWidth = cardWidth * 0.35;
+          final double imagenSize = izquierdoWidth * 0.7;
           final double fontSizeNombre = cardHeight * 0.06;
           final double fontSizeDesc = cardHeight * 0.04;
           final double fontSizeStats = cardHeight * 0.045;
@@ -162,7 +283,6 @@ class _SelectCivScreenState extends State<SelectCivScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Imagen del monumento (tamaño proporcional)
                       Container(
                         height: imagenSize,
                         width: imagenSize,
@@ -176,9 +296,9 @@ class _SelectCivScreenState extends State<SelectCivScreen> {
                         ),
                       ),
                       SizedBox(height: cardHeight * 0.02),
-                      // Nombre del monumento (fuente responsiva)
                       Text(
-                        civ.muralla.nombre,
+                        _translations[civ.muralla.nombreId] ??
+                            civ.muralla.nombreId,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: Colors.white70,
@@ -188,7 +308,6 @@ class _SelectCivScreenState extends State<SelectCivScreen> {
                         overflow: TextOverflow.ellipsis,
                       ),
                       SizedBox(height: cardHeight * 0.01),
-                      // Vida del monumento
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -220,7 +339,6 @@ class _SelectCivScreenState extends State<SelectCivScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // Nombre de la civilización
                         Text(
                           civNombre,
                           style: TextStyle(
@@ -230,7 +348,6 @@ class _SelectCivScreenState extends State<SelectCivScreen> {
                           ),
                         ),
                         SizedBox(height: cardHeight * 0.02),
-                        // Descripción
                         Text(
                           _translations[civ.muralla.descripcionId] ?? '',
                           style: TextStyle(
@@ -240,13 +357,22 @@ class _SelectCivScreenState extends State<SelectCivScreen> {
                           maxLines: 4,
                           overflow: TextOverflow.ellipsis,
                         ),
+                        // SizedBox(height: cardHeight * 0.015),
+                        // Text(
+                        //   '${_translations['habilidad_especial'] ?? 'Habilidad especial'}: ${_translations[civ.habilidadEspecialId] ?? civ.habilidadEspecialId}',
+                        //   style: TextStyle(
+                        //     color: Colors.amber[200],
+                        //     fontSize: fontSizeDesc,
+                        //   ),
+                        //   maxLines: 2,
+                        //   overflow: TextOverflow.ellipsis,
+                        // ),
                         if (guerrero != null) ...[
                           SizedBox(height: cardHeight * 0.03),
                           const Divider(color: Colors.black54, height: 1),
                           SizedBox(height: cardHeight * 0.02),
                           Row(
                             children: [
-                              // Imagen del guerrero
                               Container(
                                 height: imagenSize * 0.7,
                                 width: imagenSize * 0.7,
@@ -260,7 +386,6 @@ class _SelectCivScreenState extends State<SelectCivScreen> {
                                 ),
                               ),
                               SizedBox(width: cardHeight * 0.03),
-                              // Stats del guerrero
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -312,7 +437,6 @@ class _SelectCivScreenState extends State<SelectCivScreen> {
     );
   }
 
-  // Helper para stats responsivos
   Widget _buildStat(String icon, int value, double cardHeight) {
     final fontSize = cardHeight * 0.045;
     final iconSize = cardHeight * 0.05;

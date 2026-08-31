@@ -22,7 +22,7 @@ class Mitic2DataService {
       final civilizacionesJson = await rootBundle.loadString(
         'assets/data/civilizaciones.json',
       );
-      final translations = await _cargarTraducciones('es');
+      final translations = await cargarTraducciones('es');
 
       // 2. Parsear JSONs
       final List<dynamic> guerrerosList = json.decode(guerrerosJson);
@@ -32,20 +32,10 @@ class Mitic2DataService {
       final Map<String, Guerrero> guerreros = {};
       final Map<String, Civilizacion> civilizaciones = {};
 
-      // 4. Procesar guerreros con traducciones
+      // 4. Procesar guerreros conservando sus IDs de traducción
       for (var item in guerrerosList) {
-        final base = Guerrero.fromJson(item);
-        final traducido = Guerrero(
-          id: base.id,
-          nombreId: translations[base.nombreId] ?? base.nombreId,
-          descripcionId: translations[base.descripcionId] ?? base.descripcionId,
-          civilizacionId: base.civilizacionId,
-          ataque: base.ataque,
-          vida: base.vida,
-          costoInvocacion: base.costoInvocacion,
-          imagen: base.imagen,
-        );
-        guerreros[base.id] = traducido;
+        final guerrero = Guerrero.fromJson(item);
+        guerreros[guerrero.id] = guerrero;
       }
 
       // 5. Procesar civilizaciones
@@ -68,7 +58,7 @@ class Mitic2DataService {
   // ============================================
   // CARGAR TRADUCCIONES
   // ============================================
-  static Future<Map<String, String>> _cargarTraducciones(String locale) async {
+  static Future<Map<String, String>> cargarTraducciones(String locale) async {
     try {
       final jsonString = await rootBundle.loadString(
         'assets/data/$locale.json',

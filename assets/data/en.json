@@ -39,6 +39,17 @@
   "japon_desc": "Japanese feudal warrior who followed the Bushido code: loyalty, honor and discipline. Expert in the use of the katana, he served his lord with devotion and practiced martial arts and meditation.",
   "japon_civ": "Japan",
 
+  "azteca_muralla": "Templo Mayor",
+  "maya_muralla": "Chichen Itza",
+  "romanos_muralla": "The Colosseum",
+  "egipcios_muralla": "The Pyramids",
+  "francia_muralla": "Eiffel Tower",
+  "jerusalen_muralla": "Walls of Jerusalem",
+  "sarracenos_muralla": "Jerusalem Mosque",
+  "india_muralla": "Taj Mahal",
+  "china_muralla": "The Great Wall",
+  "japon_muralla": "Osaka Castle",
+
   "muralla_azteca_desc": "Ceremonial and spiritual center of the Mexica capital. From here, Huitzilopochtli guides his people.",
   "muralla_maya_desc": "The pyramid of Kukulkan, where the feathered serpent descends each equinox.",
   "muralla_romanos_desc": "The largest amphitheater of the Roman Empire, witness to countless gladiator battles.",
@@ -60,8 +71,9 @@
   "habilidad_india": "At the start of your turn, all your warriors gain +5 life",
   "habilidad_china": "You can summon 4 warriors on the field (instead of 3)",
   "habilidad_japon": "If you roll doubles, add the points and roll again",
+  "habilidad_especial": "Special ability",
 
-    "tutorial_titulo_1": "Welcome",
+  "tutorial_titulo_1": "Welcome",
   "tutorial_desc_1": "Welcome to Mitic, a turn-based strategy game where civilizations fight for supremacy.",
   "tutorial_titulo_2": "Choose your civilization",
   "tutorial_desc_2": "Choose from 10 available civilizations. Each has its own monument, main warrior, and special ability.",
@@ -91,5 +103,13 @@
   "tutorial_boton_siguiente": "Next",
   "tutorial_boton_comenzar": "Start",
 
-  "select_civ_titulo": "SELECT YOUR CIVILIZATION"
+  "select_civ_titulo": "SELECT YOUR CIVILIZATION",
+  "aliados_titulo": "SELECT YOUR ALLIES",
+  "aliados_seleccionados": "SELECTED",
+  "aliados_siguiente": "NEXT",
+  "cargando_datos": "Loading data...",
+  "cargando_civilizaciones": "Loading civilizations...",
+  "cargando_guerreros": "Loading warriors...",
+  "precargando_imagenes": "Preloading images...",
+  "error_carga": "Error loading data"
 }

@@ -6,10 +6,12 @@ import 'mitic2_screen.dart';
 
 class SelectAliadosScreen extends StatefulWidget {
   final Civilizacion civilizacionSeleccionada;
+  final String selectedLanguage;
 
   const SelectAliadosScreen({
     super.key,
     required this.civilizacionSeleccionada,
+    required this.selectedLanguage,
   });
 
   @override
@@ -17,14 +19,12 @@ class SelectAliadosScreen extends StatefulWidget {
 }
 
 class _SelectAliadosScreenState extends State<SelectAliadosScreen> {
-  late Future<List<Guerrero>> _guerrerosFuture;
-  late Future<Map<String, String>> _translationsFuture;
-
   List<Guerrero> _todosLosGuerreros = [];
   List<Guerrero> _guerrerosDisponibles = [];
   final List<Guerrero> _seleccionados = [];
   Map<String, String> _translations = {};
-  bool _initialized = false;
+  bool _cargando = true;
+  String? _errorCarga;
 
   int get _maxAliados => 3;
   bool get _completo => _seleccionados.length == _maxAliados;
@@ -32,8 +32,56 @@ class _SelectAliadosScreenState extends State<SelectAliadosScreen> {
   @override
   void initState() {
     super.initState();
-    _guerrerosFuture = GuerreroService.loadGuerreros();
-    _translationsFuture = GuerreroService.loadTranslations('es');
+    _cargarDatos();
+  }
+
+  Future<void> _cargarDatos() async {
+    try {
+      final resultados = await Future.wait([
+        GuerreroService.loadGuerreros(),
+        GuerreroService.loadTranslations(widget.selectedLanguage),
+      ]);
+      final guerreros = resultados[0] as List<Guerrero>;
+      final translations = resultados[1] as Map<String, String>;
+      final guerreroPrincipalId = '${widget.civilizacionSeleccionada.id}_001';
+
+      final guerreroPrincipal = guerreros.firstWhere(
+        (g) => g.id == guerreroPrincipalId,
+      );
+
+      _todosLosGuerreros = List.from(guerreros);
+      _guerrerosDisponibles =
+          guerreros.where((g) => g.id != guerreroPrincipalId).toList();
+      _translations = translations;
+
+      final imagenes = guerreros.map((guerrero) => guerrero.imagen).toSet();
+      await Future.wait(
+        imagenes.map((path) => precacheImage(AssetImage(path), context)),
+      );
+
+      if (!mounted) return;
+      setState(() {
+        _errorCarga = null;
+        _cargando = false;
+      });
+      print('🎯 Guerrero principal: ${guerreroPrincipal.nombreId}');
+      print('📋 Disponibles: ${_guerrerosDisponibles.length}');
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _errorCarga = 'Error cargando guerreros: $e';
+        _cargando = false;
+      });
+    }
+  }
+
+  String _texto(String clave, String fallback) {
+    return _translations[clave] ?? fallback;
+  }
+
+  String _textoCarga(String clave, String espanol, String ingles) {
+    return _translations[clave] ??
+        (widget.selectedLanguage == 'en' ? ingles : espanol);
   }
 
   void _seleccionarGuerrero(Guerrero guerrero) {
@@ -61,8 +109,8 @@ class _SelectAliadosScreenState extends State<SelectAliadosScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[900],
       appBar: AppBar(
-        title: const Text(
-          'SELECCIONA TUS ALIADOS',
+        title: Text(
+          _texto('aliados_titulo', 'SELECCIONA TUS ALIADOS'),
           style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2),
         ),
         backgroundColor: Colors.grey[800],
@@ -70,66 +118,54 @@ class _SelectAliadosScreenState extends State<SelectAliadosScreen> {
         centerTitle: true,
         elevation: 4,
       ),
-      body: FutureBuilder(
-        future: Future.wait([_guerrerosFuture, _translationsFuture]),
-        builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
-          if (snapshot.connectionState != ConnectionState.done) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          }
+      body:
+          _cargando
+              ? Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const CircularProgressIndicator(),
+                    const SizedBox(height: 20),
+                    Text(
+                      _textoCarga(
+                        'cargando_guerreros',
+                        'Cargando guerreros...',
+                        'Loading warriors...',
+                      ),
+                      style: const TextStyle(color: Colors.white70),
+                    ),
+                  ],
+                ),
+              )
+              : _errorCarga != null
+              ? Center(
+                child: Text(
+                  _errorCarga!,
+                  style: const TextStyle(color: Colors.white70),
+                  textAlign: TextAlign.center,
+                ),
+              )
+              : Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Colors.grey[900]!, Colors.grey[600]!],
+                  ),
+                ),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final double ancho = constraints.maxWidth;
 
-          if (!_initialized) {
-            _initialized = true;
-            final guerreros = snapshot.data![0] as List<Guerrero>;
-            final translations = snapshot.data![1] as Map<String, String>;
-
-            final guerreroPrincipalId =
-                '${widget.civilizacionSeleccionada.id}_001';
-
-            // 👇 SEPARAR GUERRERO PRINCIPAL DEL RESTO
-            final guerreroPrincipal = guerreros.firstWhere(
-              (g) => g.id == guerreroPrincipalId,
-              //orElse: () => null,
-            );
-
-            // 👇 TODOS LOS GUERREROS (INCLUYENDO PRINCIPAL) PARA USARLO EN EL BOTÓN
-            _todosLosGuerreros = List.from(guerreros);
-
-            // 👇 GUERREROS DISPONIBLES PARA SELECCIONAR (EXCLUYENDO PRINCIPAL)
-            _guerrerosDisponibles =
-                guerreros.where((g) => g.id != guerreroPrincipalId).toList();
-
-            _translations = translations;
-
-            print('🎯 Guerrero principal: ${guerreroPrincipal.nombreId}');
-            print('📋 Disponibles: ${_guerrerosDisponibles.length}');
-          }
-
-          return Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Colors.grey[900]!, Colors.grey[600]!],
+                    // SI ES MÓVIL (ancho < 800), USAR LAYOUT VERTICAL
+                    if (ancho < 800) {
+                      return _buildMobileLayout();
+                    } else {
+                      return _buildDesktopLayout();
+                    }
+                  },
+                ),
               ),
-            ),
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final double ancho = constraints.maxWidth;
-
-                // SI ES MÓVIL (ancho < 800), USAR LAYOUT VERTICAL
-                if (ancho < 800) {
-                  return _buildMobileLayout();
-                } else {
-                  return _buildDesktopLayout();
-                }
-              },
-            ),
-          );
-        },
-      ),
     );
   }
 
@@ -201,8 +237,8 @@ class _SelectAliadosScreenState extends State<SelectAliadosScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'SELECCIONADOS',
+                Text(
+                  _texto('aliados_seleccionados', 'SELECCIONADOS'),
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
                 const SizedBox(height: 16),
@@ -242,6 +278,8 @@ class _SelectAliadosScreenState extends State<SelectAliadosScreen> {
                                         civilizacionSeleccionada:
                                             widget.civilizacionSeleccionada,
                                         aliadosSeleccionados: todosLosGuerreros,
+                                        selectedLanguage:
+                                            widget.selectedLanguage,
                                       ),
                                 ),
                               );
@@ -256,8 +294,8 @@ class _SelectAliadosScreenState extends State<SelectAliadosScreen> {
                         borderRadius: BorderRadius.circular(30),
                       ),
                     ),
-                    child: const Text(
-                      'SIGUIENTE',
+                    child: Text(
+                      _texto('aliados_siguiente', 'SIGUIENTE'),
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -330,8 +368,8 @@ class _SelectAliadosScreenState extends State<SelectAliadosScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'SELECCIONADOS',
+                Text(
+                  _texto('aliados_seleccionados', 'SELECCIONADOS'),
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
                 const SizedBox(height: 8),
@@ -383,6 +421,7 @@ class _SelectAliadosScreenState extends State<SelectAliadosScreen> {
                                   civilizacionSeleccionada:
                                       widget.civilizacionSeleccionada,
                                   aliadosSeleccionados: todosLosGuerreros,
+                                  selectedLanguage: widget.selectedLanguage,
                                 ),
                           ),
                         );
@@ -397,8 +436,8 @@ class _SelectAliadosScreenState extends State<SelectAliadosScreen> {
                   borderRadius: BorderRadius.circular(30),
                 ),
               ),
-              child: const Text(
-                'SIGUIENTE',
+              child: Text(
+                _texto('aliados_siguiente', 'SIGUIENTE'),
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ),

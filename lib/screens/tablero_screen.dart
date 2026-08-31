@@ -842,14 +842,14 @@ class _TableroScreenState extends State<TableroScreen> {
                     borderRadius: BorderRadius.circular(30),
                     border: Border.all(color: Colors.amber, width: 2),
                   ),
-                  child: Text(
-                    ganador.civilizacion.nombre,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.amber,
-                    ),
-                  ),
+                  // child: Text(
+                  //   ganador.civilizacion.nombre,
+                  //   style: const TextStyle(
+                  //     fontSize: 24,
+                  //     fontWeight: FontWeight.bold,
+                  //     color: Colors.amber,
+                  //   ),
+                  // ),
                 ),
                 const SizedBox(height: 16),
 

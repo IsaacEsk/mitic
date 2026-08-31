@@ -32,11 +32,13 @@ import '../widgets/casilla_vacia_enemiga.dart';
 class Mitic2Screen extends StatefulWidget {
   final Civilizacion civilizacionSeleccionada;
   final List<Guerrero> aliadosSeleccionados;
+  final String selectedLanguage;
 
   const Mitic2Screen({
     super.key,
     required this.civilizacionSeleccionada,
     required this.aliadosSeleccionados,
+    required this.selectedLanguage,
   });
 
   @override
@@ -121,7 +123,7 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
       esEnemigo: false,
     );
 
-    print('👤 Jugador 1 - Civilización: ${miCivilizacion.nombre}');
+    print('👤 Jugador 1 - Civilización: ${miCivilizacion.nombreId}');
     print(
       '⚔️ Guerreros del jugador 1: ${misGuerrerosTraducidos.map((g) => g.nombreId).join(', ')}',
     );
@@ -151,7 +153,7 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
 
     // final civEnemigo = civilizaciones['romanos']!;
     // print(
-    //   '🤖 ENEMIGO FORZADO: ${civEnemigo.nombre} (para pruebas de IA China)',
+    //   '🤖 ENEMIGO FORZADO: ${civEnemigo.nombreId} (para pruebas de IA China)',
     // );
 
     // 👇 SELECCIONAR ENEMIGO ALEATORIO ENTRE MAYAS, AZTECAS Y CHINOS
@@ -159,14 +161,14 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
     // final civAleatoria = civsConIA[Random().nextInt(civsConIA.length)];
     // final civEnemigo = civilizaciones[civAleatoria]!;
 
-    print('🤖 ENEMIGO ALEATORIO: ${civEnemigo.nombre} (IA disponible)');
+    print('🤖 ENEMIGO ALEATORIO: ${civEnemigo.nombreId} (IA disponible)');
 
     // Obtener guerreros de la civilización enemiga (4 primeros)
     // 3. OBTENER GUERREROS USANDO EL MAPA
     final guerrerosEnemigoBase = guerrerosPorCivilizacion[civEnemigo.id] ?? [];
 
     print(
-      '🤖 Civilización enemiga: ${civEnemigo.nombre} (id: ${civEnemigo.id})',
+      '🤖 Civilización enemiga: ${civEnemigo.nombreId} (id: ${civEnemigo.id})',
     );
     print('⚔️ Guerreros encontrados: ${guerrerosEnemigoBase.length}');
 
@@ -188,7 +190,7 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
       esEnemigo: true,
     );
 
-    print('🤖 Civilización enemiga: ${civEnemigo.nombre}');
+    print('🤖 Civilización enemiga: ${civEnemigo.nombreId}');
     print(
       '⚔️ Guerreros enemigos: ${guerrerosEnemigoTraducidos.map((g) => g.nombreId).join(', ')}',
     );
@@ -5301,7 +5303,7 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                     border: Border.all(color: Colors.amber, width: 2),
                   ),
                   child: Text(
-                    ganador.civilizacion.nombre,
+                    ganador.civilizacion.nombreId,
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -5393,7 +5395,10 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const SelectCivScreen(),
+                        builder:
+                            (context) => SelectCivScreen(
+                              selectedLanguage: widget.selectedLanguage,
+                            ),
                       ),
                     );
                   },
@@ -5526,7 +5531,7 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Próximo jugador: ${jugadorSiguiente.civilizacion.nombre}',
+                    'Próximo jugador: ${jugadorSiguiente.civilizacion.nombreId}',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 18,
@@ -5535,7 +5540,7 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    '⚔️ ${jugadorSiguiente.civilizacion.nombre} ⚔️',
+                    '⚔️ ${jugadorSiguiente.civilizacion.nombreId} ⚔️',
                     style: TextStyle(
                       color: Colors.amber[600],
                       fontSize: 20,

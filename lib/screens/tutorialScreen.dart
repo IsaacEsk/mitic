@@ -40,11 +40,15 @@ class _TutorialScreenState extends State<TutorialScreen> {
   }
 
   void _goToSelectCiv() {
-    // Usamos pushAndRemoveUntil para limpiar el historial
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (context) => const SelectCivScreen()),
-      (route) => false, // Elimina TODAS las rutas anteriores
+      MaterialPageRoute(
+        builder:
+            (context) => SelectCivScreen(
+              selectedLanguage: widget.selectedLanguage, // 👈 Pasar el idioma
+            ),
+      ),
+      (route) => false,
     );
   }
 

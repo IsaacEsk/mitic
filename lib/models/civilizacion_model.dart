@@ -7,13 +7,13 @@
 
 class Civilizacion {
   final String id;
-  final String nombre; // name of the civilisation (Azteca, Maya, ...)
+  final String nombreId;
   final Muralla muralla;
   final String habilidadEspecialId;
 
   Civilizacion({
     required this.id,
-    required this.nombre,
+    required this.nombreId,
     required this.muralla,
     required this.habilidadEspecialId,
   });
@@ -21,7 +21,7 @@ class Civilizacion {
   factory Civilizacion.fromJson(Map<String, dynamic> json) {
     return Civilizacion(
       id: json['id'] as String,
-      nombre: json['nombre'] as String,
+      nombreId: json['nombre_id'] as String,
       muralla: Muralla.fromJson(json['muralla'] as Map<String, dynamic>),
       habilidadEspecialId: json['habilidad_especial_id'] as String,
     );
@@ -30,13 +30,13 @@ class Civilizacion {
 
 /// Sub‑object that describes the monument/wall for the civilisation.
 class Muralla {
-  final String nombre;
+  final String nombreId;
   final int vida;
   final String imagen;
   final String descripcionId;
 
   Muralla({
-    required this.nombre,
+    required this.nombreId,
     required this.vida,
     required this.imagen,
     required this.descripcionId,
@@ -49,7 +49,7 @@ class Muralla {
     //   imagenPath = imagenPath.substring(7);
     // }
     return Muralla(
-      nombre: json['nombre'] as String,
+      nombreId: json['nombre_id'] as String,
       vida: json['vida'] as int,
       imagen: imagenPath,
       descripcionId: json['descripcion_id'] as String,

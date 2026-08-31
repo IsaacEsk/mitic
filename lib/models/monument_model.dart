@@ -20,7 +20,7 @@ class MonumentField {
   // Para crear desde una Civilizacion
   factory MonumentField.fromCivilizacion(Civilizacion civ) {
     return MonumentField(
-      nombre: civ.muralla.nombre,
+      nombre: civ.muralla.nombreId,
       vidaActual: civ.muralla.vida,
       vidaMaxima: civ.muralla.vida,
       imagenPath: civ.muralla.imagen,

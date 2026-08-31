@@ -39,6 +39,17 @@
   "japon_desc": "Guerrero feudal japonés que seguía el código del bushido: lealtad, honor y disciplina. Experto en el manejo de la katana, servía a su señor con devoción y practicaba artes marciales y meditación.",
   "japon_civ": "Japón",
 
+  "azteca_muralla": "Templo Mayor",
+  "maya_muralla": "Chichén Itzá",
+  "romanos_muralla": "El Coliseo",
+  "egipcios_muralla": "Las Pirámides",
+  "francia_muralla": "Torre Eiffel",
+  "jerusalen_muralla": "Murallas de Jerusalén",
+  "sarracenos_muralla": "Mezquita de Jerusalén",
+  "india_muralla": "Taj Mahal",
+  "china_muralla": "La Gran Muralla",
+  "japon_muralla": "Castillo de Osaka",
+
   "muralla_azteca_desc": "Centro ceremonial y espiritual de la capital mexica. Desde aquí, Huitzilopochtli guía a su pueblo.",
   "muralla_maya_desc": "La pirámide de Kukulkán, donde la serpiente emplumada desciende cada equinoccio.",
   "muralla_romanos_desc": "El anfiteatro más grande del Imperio Romano, testigo de innumerables batallas de gladiadores.",
@@ -60,6 +71,7 @@
   "habilidad_india": "Al inicio de tu turno, todos tus guerreros ganan +5 vida",
   "habilidad_china": "Puedes invocar 4 guerreros en el campo (en lugar de 3)",
   "habilidad_japon": "Si sacas dobles, sumas puntos y vuelves a tirar los dados",
+  "habilidad_especial": "Habilidad especial",
 
   "tutorial_titulo_1": "Bienvenida",
   "tutorial_desc_1": "Bienvenido a Mitic, un juego de estrategia por turnos donde las civilizaciones luchan por la supremacía.",
@@ -91,5 +103,13 @@
   "tutorial_boton_siguiente": "Siguiente",
   "tutorial_boton_comenzar": "Comenzar",
 
-  "select_civ_titulo": "SELECCIONA TU CIVILIZACIÓN"
+  "select_civ_titulo": "SELECCIONA TU CIVILIZACIÓN",
+  "aliados_titulo": "SELECCIONA TUS ALIADOS",
+  "aliados_seleccionados": "SELECCIONADOS",
+  "aliados_siguiente": "SIGUIENTE",
+  "cargando_datos": "Cargando datos...",
+  "cargando_civilizaciones": "Cargando civilizaciones...",
+  "cargando_guerreros": "Cargando guerreros...",
+  "precargando_imagenes": "Precargando imágenes...",
+  "error_carga": "Error cargando datos"
 }

@@ -99,41 +99,43 @@ class _TutorialScreenState extends State<TutorialScreen> {
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
+            final isSmallScreen = constraints.maxHeight < 700;
+            final textFontSize = isSmallScreen ? 18.0 : 28.0;
+            final descFontSize = isSmallScreen ? 13.0 : 16.0;
+            final buttonFontSize = isSmallScreen ? 14.0 : 16.0;
+
             return Padding(
-              padding: const EdgeInsets.all(20.0),
+              padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
-                  // 1. TÍTULO Y DESCRIPCIÓN
-                  Expanded(
-                    flex: 2,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          _translations[tituloKey] ?? 'Título no encontrado',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          textAlign: TextAlign.center,
+                  // 1. TÍTULO Y DESCRIPCIÓN (sin Expanded, tamaño natural)
+                  Column(
+                    children: [
+                      Text(
+                        _translations[tituloKey] ?? 'Título no encontrado',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: textFontSize,
+                          fontWeight: FontWeight.bold,
                         ),
-                        const SizedBox(height: 10),
-                        Text(
-                          _translations[descKey] ?? 'Descripción no encontrada',
-                          style: const TextStyle(
-                            color: Colors.grey,
-                            fontSize: 16,
-                          ),
-                          textAlign: TextAlign.center,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        _translations[descKey] ?? 'Descripción no encontrada',
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontSize: descFontSize,
                         ),
-                      ],
-                    ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
                   ),
 
-                  // 2. ÁREA DE LA IMAGEN
+                  const SizedBox(height: 12),
+
+                  // 2. ÁREA DE LA IMAGEN (Expanded para ocupar espacio disponible)
                   Expanded(
-                    flex: 6,
                     child: Container(
                       width: double.infinity,
                       decoration: BoxDecoration(
@@ -162,82 +164,74 @@ class _TutorialScreenState extends State<TutorialScreen> {
                     ),
                   ),
 
-                  // 3. INDICADORES Y BOTONES
-                  Expanded(
-                    flex: 1,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        // Puntos indicadores
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: List.generate(
-                            12,
-                            (index) => Container(
-                              margin: const EdgeInsets.symmetric(horizontal: 4),
-                              width: _currentStep == index ? 12 : 8,
-                              height: _currentStep == index ? 12 : 8,
-                              decoration: BoxDecoration(
-                                color:
-                                    _currentStep == index
-                                        ? Colors.white
-                                        : Colors.grey[600],
-                                shape: BoxShape.circle,
-                              ),
+                  const SizedBox(height: 12),
+
+                  // 3. INDICADORES Y BOTONES (sin Expanded, tamaño natural)
+                  Column(
+                    children: [
+                      // Puntos indicadores
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: List.generate(
+                          12,
+                          (index) => Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 4),
+                            width: _currentStep == index ? 12 : 8,
+                            height: _currentStep == index ? 12 : 8,
+                            decoration: BoxDecoration(
+                              color:
+                                  _currentStep == index
+                                      ? Colors.white
+                                      : Colors.grey[600],
+                              shape: BoxShape.circle,
                             ),
                           ),
                         ),
-                        const SizedBox(height: 20),
-                        // Botones
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            // Botón "Saltar" o "Atrás"
-                            TextButton(
-                              onPressed:
-                                  _currentStep == 0
-                                      ? _goToSelectCiv // Si es el primer paso, "Saltar" lleva a SelectCiv
-                                      : _previousStep,
-                              child: Text(
-                                _currentStep == 0 ? saltarText : atrasText,
-                                style: TextStyle(
-                                  color:
-                                      _currentStep == 0
-                                          ? Colors
-                                              .white // El botón "Saltar" siempre visible
-                                          : Colors.white,
-                                  fontSize: 16,
-                                ),
+                      ),
+                      const SizedBox(height: 16),
+                      // Botones
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // Botón "Saltar" o "Atrás"
+                          TextButton(
+                            onPressed:
+                                _currentStep == 0
+                                    ? _goToSelectCiv
+                                    : _previousStep,
+                            child: Text(
+                              _currentStep == 0 ? saltarText : atrasText,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: buttonFontSize,
                               ),
                             ),
-                            // Botón "Siguiente" o "Comenzar"
-                            ElevatedButton(
-                              onPressed: _nextStep,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.white,
-                                foregroundColor: Colors.black,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 30,
-                                  vertical: 15,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(30),
-                                ),
+                          ),
+                          // Botón "Siguiente" o "Comenzar"
+                          ElevatedButton(
+                            onPressed: _nextStep,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: Colors.black,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: isSmallScreen ? 20 : 30,
+                                vertical: isSmallScreen ? 10 : 15,
                               ),
-                              child: Text(
-                                _currentStep == 11
-                                    ? comenzarText
-                                    : siguienteText,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
                               ),
                             ),
-                          ],
-                        ),
-                      ],
-                    ),
+                            child: Text(
+                              _currentStep == 11 ? comenzarText : siguienteText,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: buttonFontSize,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ],
               ),

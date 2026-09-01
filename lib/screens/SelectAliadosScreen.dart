@@ -510,11 +510,11 @@ class _SelectAliadosScreenState extends State<SelectAliadosScreen> {
               Padding(
                 padding: const EdgeInsets.all(4),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _buildStat('❤️', guerrero.vida),
-                    _buildStat('🗡️', guerrero.ataque),
-                    _buildStat('⚡', guerrero.costoInvocacion),
+                    Flexible(child: _buildStat('❤️', guerrero.vida)),
+                    Flexible(child: _buildStat('🗡️', guerrero.ataque)),
+                    Flexible(child: _buildStat('⚡', guerrero.costoInvocacion)),
                   ],
                 ),
               ),
@@ -746,14 +746,17 @@ class _SelectAliadosScreenState extends State<SelectAliadosScreen> {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(icon, style: const TextStyle(fontSize: 12)),
-        const SizedBox(width: 2),
-        Text(
-          value.toString(),
-          style: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
+        Text(icon, style: const TextStyle(fontSize: 10)),
+        const SizedBox(width: 1),
+        Flexible(
+          child: Text(
+            value.toString(),
+            style: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
+            overflow: TextOverflow.ellipsis,
           ),
         ),
       ],

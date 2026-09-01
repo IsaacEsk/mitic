@@ -1,0 +1,10 @@
+flutter clean
+flutter pub get
+flutter build web --release --base-href="/mitic/"
+Remove-Item -Recurse -Force docs
+mkdir docs
+Copy-Item -Recurse build/web/* docs/
+Copy-Item -Recurse assets docs/
+git add docs
+git commit -m "Deploy MITIC - reparar tutorial"
+git push

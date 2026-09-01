@@ -55,6 +55,7 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
   Map<String, Hospital>? hospitales; // 👈 NUEVO
   Map<String, Cultivo>? cultivos;
   Map<String, Aldeano>? aldeanos;
+  Map<String, String> _translations = {};
   late Juego2 juego;
   bool _cargado = false;
   int? _filaSeleccionada;
@@ -89,9 +90,13 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
     final datos = await Mitic2DataService.cargarTodo();
     final guerrerosBase = datos['guerreros'] as Map<String, Guerrero>;
     final civilizaciones = datos['civilizaciones'] as Map<String, Civilizacion>;
-    final translations = datos['translations'] as Map<String, String>;
+    final translations = await Mitic2DataService.cargarTraducciones(
+      widget.selectedLanguage,
+    );
+    _translations = translations;
 
-    _cargarDatos();
+    await _cargarDatos();
+    await _precargarImagenes();
 
     // 👇 FUNCIÓN PARA TRADUCIR UN GUERRERO
     Guerrero traducirGuerrero(Guerrero original) {
@@ -217,7 +222,6 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
       hospitales = hospitalesData;
       cultivos = cultivosData;
       aldeanos = aldeanosData;
-      _cargado = true;
     });
 
     print('✅ Datos cargados:');
@@ -229,13 +233,55 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
     print('   - ${aldeanos?.length} aldeanos');
   }
 
+  Future<void> _precargarImagenes() async {
+    final paths = <String>{
+      ...?guerreros?.values.map((item) => item.imagen),
+      ...?torres?.values.map((item) => item.imagen),
+      ...?hospitales?.values.map((item) => item.imagen),
+      ...?cultivos?.values.map((item) => item.imagen),
+      ...?aldeanos?.values.map((item) => item.imagen),
+      ...?civilizaciones?.values.map((item) => item.muralla.imagen),
+    };
+
+    for (var izquierda = 1; izquierda <= 6; izquierda++) {
+      for (var derecha = 1; derecha <= 6; derecha++) {
+        paths.add('assets/images/dados/${izquierda}x$derecha.png');
+      }
+    }
+
+    await Future.wait(
+      paths.map((path) => precacheImage(AssetImage(path), context)),
+    );
+  }
+
+  String _t(String key, String fallback) {
+    return _translations[key] ?? fallback;
+  }
+
   @override
   @override
   Widget build(BuildContext context) {
     if (!_cargado) {
-      return const Scaffold(
+      return Scaffold(
         backgroundColor: Colors.grey,
-        body: Center(child: CircularProgressIndicator(color: Colors.amber)),
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CircularProgressIndicator(color: Colors.amber),
+              const SizedBox(height: 16),
+              Text(
+                _t(
+                  'cargando_partida',
+                  widget.selectedLanguage == 'en'
+                      ? 'Loading game...'
+                      : 'Cargando partida...',
+                ),
+                style: const TextStyle(color: Colors.white70),
+              ),
+            ],
+          ),
+        ),
       );
     }
     return Scaffold(
@@ -388,8 +434,8 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                     minimumSize: Size(ladoCelda * 0.8, ladoCelda * 0.3),
                     padding: EdgeInsets.zero,
                   ),
-                  child: const Text(
-                    'PASAR',
+                  child: Text(
+                    _t('pasar', 'PASAR'),
                     style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -498,8 +544,10 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                   // ============================================
                   if (_modoMover || _modoMoverGuerrero) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('❌ Solo puedes mover a casillas vacías'),
+                      SnackBar(
+                        content: Text(
+                          '❌ ${_t('solo_vacias', 'Solo puedes mover a casillas vacías')}',
+                        ),
                         backgroundColor: Colors.red,
                         duration: Duration(seconds: 1),
                       ),
@@ -525,7 +573,7 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                   // ============================================
                   if (_modoMover || _modoMoverGuerrero) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
+                      SnackBar(
                         content: Text('❌ Solo puedes mover a casillas vacías'),
                         backgroundColor: Colors.red,
                         duration: Duration(seconds: 1),
@@ -553,7 +601,7 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                   // ============================================
                   if (_modoMover || _modoMoverGuerrero) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
+                      SnackBar(
                         content: Text('❌ Solo puedes mover a casillas vacías'),
                         backgroundColor: Colors.red,
                         duration: Duration(seconds: 1),
@@ -580,7 +628,7 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                   // ============================================
                   if (_modoMover || _modoMoverGuerrero) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
+                      SnackBar(
                         content: Text('❌ Solo puedes mover a casillas vacías'),
                         backgroundColor: Colors.red,
                         duration: Duration(seconds: 1),
@@ -606,7 +654,7 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                   // ============================================
                   if (_modoMover || _modoMoverGuerrero) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
+                      SnackBar(
                         content: Text('❌ Solo puedes mover a casillas vacías'),
                         backgroundColor: Colors.red,
                         duration: Duration(seconds: 1),
@@ -632,7 +680,7 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                   // ============================================
                   if (_modoMover || _modoMoverGuerrero) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
+                      SnackBar(
                         content: Text('❌ Solo puedes mover a casillas vacías'),
                         backgroundColor: Colors.red,
                         duration: Duration(seconds: 1),
@@ -703,7 +751,7 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
           construcciones.add(
             InvocableItem(
               id: torreCiv.id,
-              nombre: torreCiv.nombre,
+              nombre: _translations['${torreCiv.id}_nombre'] ?? torreCiv.nombre,
               imagenPath: torreCiv.imagen,
               costo: torreCiv.costoInvocacion,
               tipo: 'torre',
@@ -729,7 +777,9 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
           construcciones.add(
             InvocableItem(
               id: hospitalCiv.id,
-              nombre: hospitalCiv.nombre,
+              nombre:
+                  _translations['${hospitalCiv.id}_nombre'] ??
+                  hospitalCiv.nombre,
               imagenPath: hospitalCiv.imagen,
               costo: hospitalCiv.costoInvocacion,
               tipo: 'hospital',
@@ -755,7 +805,8 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
           construcciones.add(
             InvocableItem(
               id: cultivoCiv.id,
-              nombre: cultivoCiv.nombre,
+              nombre:
+                  _translations['${cultivoCiv.id}_nombre'] ?? cultivoCiv.nombre,
               imagenPath: cultivoCiv.imagen,
               costo: cultivoCiv.costoInvocacion,
               tipo: 'cultivo',
@@ -781,7 +832,8 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
           construcciones.add(
             InvocableItem(
               id: aldeanoCiv.id,
-              nombre: aldeanoCiv.nombre,
+              nombre:
+                  _translations['${aldeanoCiv.id}_nombre'] ?? aldeanoCiv.nombre,
               imagenPath: aldeanoCiv.imagen,
               costo: aldeanoCiv.costoInvocacion,
               tipo: 'aldeano',
@@ -827,8 +879,8 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        '⚡ INVOCAR',
+                      Text(
+                        '⚡ ${_t('invocar', 'INVOCAR')}',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 20,
@@ -860,8 +912,8 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                 if (guerrerosDisponibles.isNotEmpty) ...[
                   Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: const Text(
-                      '⚔️ GUERREROS',
+                    child: Text(
+                      '⚔️ ${_t('guerreros', 'GUERREROS')}',
                       style: TextStyle(
                         color: Colors.white70,
                         fontWeight: FontWeight.bold,
@@ -891,8 +943,8 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                 if (construcciones.isNotEmpty) ...[
                   Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: const Text(
-                      '🏗️ 🏰 🏥 🌱 🔨 👨',
+                    child: Text(
+                      '🏗️ 🏰 🏥 🌱 🔨 👨 ${_t('construcciones', 'CONSTRUCCIONES')}',
                       style: TextStyle(
                         color: Colors.white70,
                         fontWeight: FontWeight.bold,
@@ -910,10 +962,10 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
 
                 // MENSAJE SI NO HAY NADA
                 if (guerrerosDisponibles.isEmpty && construcciones.isEmpty)
-                  const Padding(
+                  Padding(
                     padding: EdgeInsets.all(20),
                     child: Text(
-                      '❌ No tienes puntos suficientes\npara invocar nada',
+                      '❌ ${_t('sin_puntos_invocar', 'No tienes puntos suficientes\npara invocar nada')}',
                       textAlign: TextAlign.center,
                       style: TextStyle(color: Colors.white70),
                     ),
@@ -1013,7 +1065,7 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                 if (puedeAtacar)
                   _buildBotonAccion(
                     icon: '⚔️',
-                    texto: 'ATACAR',
+                    texto: _t('atacar', 'ATACAR'),
                     color: Colors.red,
                     onPressed: () {
                       if (juego.turnoActual != 0) return;
@@ -1028,13 +1080,13 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                 //const SizedBox(height: 8),
                 _buildBotonAccion(
                   icon: '💪',
-                  texto: 'MEJORAR ATAQUE',
+                  texto: _t('mejorar_ataque', 'MEJORAR ATAQUE'),
                   color: Colors.orange,
                   onPressed: () {
                     if (juego.turnoActual != 0) return;
                     Navigator.pop(context);
                     _mostrarModalPuntos(
-                      titulo: '💪 MEJORAR ATAQUE',
+                      titulo: '💪 ${_t('mejorar_ataque', 'MEJORAR ATAQUE')}',
                       icono: '⚔️',
                       valorActual: guerrero.ataqueActual,
                       puntosMaximos: jugador.puntosAcumulados,
@@ -1058,13 +1110,13 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
 
                 _buildBotonAccion(
                   icon: '❤️',
-                  texto: 'CURAR',
+                  texto: _t('curar', 'CURAR'),
                   color: Colors.green,
                   onPressed: () {
                     if (juego.turnoActual != 0) return;
                     Navigator.pop(context);
                     _mostrarModalPuntos(
-                      titulo: '❤️ CURAR',
+                      titulo: '❤️ ${_t('curar', 'CURAR')}',
                       icono: '❤️',
                       valorActual: guerrero.vidaActual,
                       puntosMaximos: jugador.puntosAcumulados,
@@ -1088,7 +1140,7 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
 
                 _buildBotonAccion(
                   icon: '🚶',
-                  texto: 'MOVER',
+                  texto: _t('mover', 'MOVER'),
                   color: Colors.blue,
                   onPressed:
                       _hayCasillasVacias(jugador)
@@ -1098,9 +1150,9 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                             _modoMoverGuerrero = true;
                             _guerreroParaMover = casillaGuerrero;
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
+                              SnackBar(
                                 content: Text(
-                                  '👆 Selecciona una casilla vacía para mover',
+                                  '👆 ${_t('selecciona_casilla', 'Selecciona una casilla vacía para mover')}',
                                 ),
                                 backgroundColor: Colors.blue,
                               ),
@@ -1113,7 +1165,7 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
 
                 _buildBotonAccion(
                   icon: '❌',
-                  texto: 'CANCELAR',
+                  texto: _t('cancelar', 'CANCELAR'),
                   color: Colors.grey,
                   onPressed: () => Navigator.pop(context),
                 ),
@@ -1131,8 +1183,10 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
 
     if (jugador.puntosAcumulados <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('❌ No tienes puntos para mejorar'),
+        SnackBar(
+          content: Text(
+            '❌ ${_t('sin_puntos_mejorar', 'No tienes puntos para mejorar')}',
+          ),
           backgroundColor: Colors.red,
         ),
       );
@@ -1167,7 +1221,7 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                     Text('🗼', style: TextStyle(fontSize: 28)),
                     const SizedBox(width: 8),
                     Text(
-                      'TORRE',
+                      _t('modal_torre', 'TORRE'),
                       style: TextStyle(
                         color: Colors.amber,
                         fontSize: 20,
@@ -1201,9 +1255,9 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text(
-                                '🏹 Ataque:',
-                                style: TextStyle(color: Colors.white70),
+                              Text(
+                                '🏹 ${_t('ataque', 'Ataque:')}',
+                                style: const TextStyle(color: Colors.white70),
                               ),
                               Text(
                                 '${torre.ataqueActual}',
@@ -1218,9 +1272,9 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text(
-                                '🏰 Vida:',
-                                style: TextStyle(color: Colors.white70),
+                              Text(
+                                '🏰 ${_t('vida', 'Vida:')}',
+                                style: const TextStyle(color: Colors.white70),
                               ),
                               Text(
                                 '${torre.vidaActual}',
@@ -1252,7 +1306,7 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                       const Icon(Icons.flash_on, color: Colors.amber, size: 18),
                       const SizedBox(width: 4),
                       Text(
-                        '${jugador.puntosAcumulados} puntos disponibles',
+                        '${jugador.puntosAcumulados} ${_t('puntos_disponibles', 'puntos disponibles')}',
                         style: const TextStyle(color: Colors.white),
                       ),
                     ],
@@ -1268,12 +1322,13 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                     Expanded(
                       child: _buildOpcionMejora(
                         icon: '🏹',
-                        titulo: 'MEJORAR ATAQUE',
+                        titulo: _t('mejorar_ataque_full', 'MEJORAR ATAQUE'),
                         color: Colors.orange,
                         onPressed: () {
                           Navigator.pop(context);
                           _mostrarModalPuntos(
-                            titulo: '🏹 MEJORAR ATAQUE',
+                            titulo:
+                                '🏹 ${_t('mejorar_ataque_full', 'MEJORAR ATAQUE')}',
                             icono: '🏹',
                             valorActual: torre.ataqueActual,
                             puntosMaximos: jugador.puntosAcumulados,
@@ -1298,7 +1353,7 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                     Expanded(
                       child: _buildOpcionMejora(
                         icon: '🏰',
-                        titulo: 'RECONSTRUIR',
+                        titulo: _t('reconstruir', 'RECONSTRUIR'),
                         color: Colors.blue,
                         onPressed: () {
                           Navigator.pop(context);
@@ -1331,8 +1386,8 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                 // Botón cancelar
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text(
-                    'CANCELAR',
+                  child: Text(
+                    _t('cancelar', 'CANCELAR'),
                     style: TextStyle(color: Colors.white70),
                   ),
                 ),
@@ -1386,7 +1441,7 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                     Text('🏥', style: TextStyle(fontSize: 28)),
                     const SizedBox(width: 8),
                     Text(
-                      'HOSPITAL',
+                      _t('modal_hospital', 'HOSPITAL'),
                       style: TextStyle(
                         color: Colors.amber,
                         fontSize: 20,
@@ -1420,9 +1475,9 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text(
-                                '💊 Curación:',
-                                style: TextStyle(color: Colors.white70),
+                              Text(
+                                '💊 ${_t('curacion', 'Curación:')}',
+                                style: const TextStyle(color: Colors.white70),
                               ),
                               Text(
                                 '${hospital.poderCuracionActual}',
@@ -1437,9 +1492,9 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text(
-                                '🏥 Vida:',
-                                style: TextStyle(color: Colors.white70),
+                              Text(
+                                '🏥 ${_t('vida', 'Vida:')}',
+                                style: const TextStyle(color: Colors.white70),
                               ),
                               Text(
                                 '${hospital.vidaActual}',
@@ -1471,7 +1526,7 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                       const Icon(Icons.flash_on, color: Colors.amber, size: 18),
                       const SizedBox(width: 4),
                       Text(
-                        '${jugador.puntosAcumulados} puntos disponibles',
+                        '${jugador.puntosAcumulados} ${_t('puntos_disponibles', 'puntos disponibles')}',
                         style: const TextStyle(color: Colors.white),
                       ),
                     ],
@@ -1487,12 +1542,13 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                     Expanded(
                       child: _buildOpcionMejora(
                         icon: '💊',
-                        titulo: 'MEJORAR CURACIÓN',
+                        titulo: _t('mejorar_curacion', 'MEJORAR CURACIÓN'),
                         color: Colors.green,
                         onPressed: () {
                           Navigator.pop(context);
                           _mostrarModalPuntos(
-                            titulo: '💊 MEJORAR CURACIÓN',
+                            titulo:
+                                '💊 ${_t('mejorar_curacion', 'MEJORAR CURACIÓN')}',
                             icono: '💊',
                             valorActual: hospital.poderCuracionActual,
                             puntosMaximos: jugador.puntosAcumulados,
@@ -1517,12 +1573,12 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                     Expanded(
                       child: _buildOpcionMejora(
                         icon: '🏥',
-                        titulo: 'RECONSTRUIR',
+                        titulo: _t('reconstruir', 'RECONSTRUIR'),
                         color: Colors.blue,
                         onPressed: () {
                           Navigator.pop(context);
                           _mostrarModalPuntos(
-                            titulo: '🏥 RECONSTRUIR',
+                            titulo: '🏥 ${_t('reconstruir', 'RECONSTRUIR')}',
                             icono: '🏥',
                             valorActual: hospital.vidaActual,
                             puntosMaximos: jugador.puntosAcumulados,
@@ -1550,9 +1606,9 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                 // Botón cancelar
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text(
-                    'CANCELAR',
-                    style: TextStyle(color: Colors.white70),
+                  child: Text(
+                    _t('cancelar', 'CANCELAR'),
+                    style: const TextStyle(color: Colors.white70),
                   ),
                 ),
               ],
@@ -1605,7 +1661,7 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                     Text('🌾', style: TextStyle(fontSize: 28)),
                     const SizedBox(width: 8),
                     Text(
-                      'CULTIVO',
+                      _t('modal_cultivo', 'CULTIVO'),
                       style: TextStyle(
                         color: Colors.amber,
                         fontSize: 20,
@@ -1639,8 +1695,8 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text(
-                                '🌾 Puntos/turno:',
+                              Text(
+                                '🌾 ${_t('puntos_turno', 'Puntos/turno:')}',
                                 style: TextStyle(color: Colors.white70),
                               ),
                               Text(
@@ -1656,8 +1712,8 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text(
-                                '🌱 Vida:',
+                              Text(
+                                '🌱 ${_t('vida', 'Vida:')}',
                                 style: TextStyle(color: Colors.white70),
                               ),
                               Text(
@@ -1690,7 +1746,7 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                       const Icon(Icons.flash_on, color: Colors.amber, size: 18),
                       const SizedBox(width: 4),
                       Text(
-                        '${jugador.puntosAcumulados} puntos disponibles',
+                        '${jugador.puntosAcumulados} ${_t('puntos_disponibles', 'puntos disponibles')}',
                         style: const TextStyle(color: Colors.white),
                       ),
                     ],
@@ -1706,12 +1762,13 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                     Expanded(
                       child: _buildOpcionMejora(
                         icon: '🌾',
-                        titulo: 'MEJORAR PRODUCCIÓN',
+                        titulo: _t('mejorar_produccion', 'MEJORAR PRODUCCIÓN'),
                         color: Colors.green,
                         onPressed: () {
                           Navigator.pop(context);
                           _mostrarModalPuntos(
-                            titulo: '🌾 MEJORAR PRODUCCIÓN',
+                            titulo:
+                                '🌾 ${_t('mejorar_produccion', 'MEJORAR PRODUCCIÓN')}',
                             icono: '🌾',
                             valorActual: cultivo.puntosPorTurnoActual,
                             puntosMaximos: jugador.puntosAcumulados,
@@ -1736,12 +1793,12 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                     Expanded(
                       child: _buildOpcionMejora(
                         icon: '🌱',
-                        titulo: 'RECONSTRUIR',
+                        titulo: _t('reconstruir', 'RECONSTRUIR'),
                         color: Colors.blue,
                         onPressed: () {
                           Navigator.pop(context);
                           _mostrarModalPuntos(
-                            titulo: '🌱 RECONSTRUIR',
+                            titulo: '🌱 ${_t('reconstruir', 'RECONSTRUIR')}',
                             icono: '🌱',
                             valorActual: cultivo.vidaActual,
                             puntosMaximos: jugador.puntosAcumulados,
@@ -1769,9 +1826,9 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                 // Botón cancelar
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text(
-                    'CANCELAR',
-                    style: TextStyle(color: Colors.white70),
+                  child: Text(
+                    _t('cancelar', 'CANCELAR'),
+                    style: const TextStyle(color: Colors.white70),
                   ),
                 ),
               ],
@@ -1839,12 +1896,13 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                 // Botones de acción
                 _buildBotonAccion(
                   icon: '🔨',
-                  texto: 'MEJORAR RECONSTRUCCIÓN',
+                  texto: _t('mejorar_reconstruccion', 'MEJORAR RECONSTRUCCIÓN'),
                   color: Colors.orange,
                   onPressed: () {
                     Navigator.pop(context);
                     _mostrarModalPuntos(
-                      titulo: '🔨 MEJORAR RECONSTRUCCIÓN',
+                      titulo:
+                          '🔨 ${_t('mejorar_reconstruccion', 'MEJORAR RECONSTRUCCIÓN')}',
                       icono: '🔨',
                       valorActual: aldeano.puntosReconstruccionActual,
                       puntosMaximos: jugador.puntosAcumulados,
@@ -1868,12 +1926,12 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
 
                 _buildBotonAccion(
                   icon: '❤️',
-                  texto: 'CURAR',
+                  texto: _t('curar', 'CURAR'),
                   color: Colors.green,
                   onPressed: () {
                     Navigator.pop(context);
                     _mostrarModalPuntos(
-                      titulo: '❤️ CURAR ALDEANO',
+                      titulo: '❤️ ${_t('curar', 'CURAR')} ALDEANO',
                       icono: '❤️',
                       valorActual: aldeano.vidaActual,
                       puntosMaximos: jugador.puntosAcumulados,
@@ -1896,7 +1954,7 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                 const SizedBox(height: 8),
                 _buildBotonAccion(
                   icon: '🚶',
-                  texto: 'MOVER',
+                  texto: _t('mover', 'MOVER'),
                   color: Colors.blue,
                   onPressed:
                       _hayCasillasVacias(jugador)
@@ -1905,9 +1963,9 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                             _modoMover = true;
                             _aldeanoParaMover = casillaAldeano;
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
+                              SnackBar(
                                 content: Text(
-                                  '👆 Selecciona una casilla vacía para mover',
+                                  '👆 ${_t('selecciona_casilla', 'Selecciona una casilla vacía para mover')}',
                                 ),
                                 backgroundColor: Colors.blue,
                               ),
@@ -1920,7 +1978,7 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
 
                 _buildBotonAccion(
                   icon: '❌',
-                  texto: 'CANCELAR',
+                  texto: _t('cancelar', 'CANCELAR'),
                   color: Colors.grey,
                   onPressed: () => Navigator.pop(context),
                 ),
@@ -2174,12 +2232,12 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      'Valor actual: $valorActual',
+                      '${_t('valor_actual', 'Valor actual:')} $valorActual',
                       style: const TextStyle(color: Colors.white70),
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      '⚡ $puntosMaximos disponibles',
+                      '⚡ $puntosMaximos ${_t('disponibles', 'disponibles')}',
                       style: const TextStyle(color: Colors.amber),
                     ),
                     const SizedBox(height: 16),
@@ -2209,7 +2267,7 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                       children: [
                         ElevatedButton(
                           onPressed: () => Navigator.pop(context),
-                          child: const Text('CANCELAR'),
+                          child: Text(_t('cancelar', 'CANCELAR')),
                         ),
                         ElevatedButton(
                           onPressed: () {
@@ -2219,7 +2277,7 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.orange,
                           ),
-                          child: const Text('MEJORAR'),
+                          child: Text(_t('mejorar', 'MEJORAR')),
                         ),
                       ],
                     ),
@@ -2435,8 +2493,10 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
 
     if (jugador.puntosAcumulados <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('❌ No tienes puntos para reconstruir'),
+        SnackBar(
+          content: Text(
+            '❌ ${_t('sin_puntos_reconstruir', 'No tienes puntos para reconstruir')}',
+          ),
           backgroundColor: Colors.red,
         ),
       );
@@ -2602,7 +2662,7 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.grey[700],
                           ),
-                          child: const Text('CANCELAR'),
+                          child: Text(_t('cancelar', 'CANCELAR')),
                         ),
                         ElevatedButton(
                           onPressed: () {
@@ -2624,7 +2684,7 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blue,
                           ),
-                          child: const Text('RECONSTRUIR'),
+                          child: Text(_t('reconstruir', 'RECONSTRUIR')),
                         ),
                       ],
                     ),
@@ -2655,8 +2715,10 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('❌ Error: no hay casilla seleccionada'),
+        SnackBar(
+          content: Text(
+            '❌ ${_t('error_casilla', 'Error: no hay casilla seleccionada')}',
+          ),
           backgroundColor: Colors.red,
         ),
       );
@@ -2672,8 +2734,10 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
     // ============================================
     if (!jugador.tablero.estaVacia(fila, columna)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('❌ La casilla ya no está vacía'),
+        SnackBar(
+          content: Text(
+            '❌ ${_t('casilla_ocupada', 'La casilla ya no está vacía')}',
+          ),
           backgroundColor: Colors.red,
         ),
       );
@@ -2857,23 +2921,26 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                 // Imagen del terremoto (puedes poner un emoji por ahora)
                 const Text('🌍', style: TextStyle(fontSize: 60)),
                 const SizedBox(height: 12),
-                const Text(
-                  '🌍 TERREMOTO 🌍',
-                  style: TextStyle(
+                Text(
+                  _t('desastre_terremoto_titulo', '🌍 TERREMOTO 🌍'),
+                  style: const TextStyle(
                     color: Colors.amber,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'La tierra tiembla...',
-                  style: TextStyle(color: Colors.white70),
+                Text(
+                  _t('desastre_terremoto_mensaje', 'La tierra tiembla...'),
+                  style: const TextStyle(color: Colors.white70),
                 ),
                 const SizedBox(height: 16),
-                const Text(
-                  '⏳ Cerrando en 2 segundos...',
-                  style: TextStyle(color: Colors.white54, fontSize: 10),
+                Text(
+                  _t(
+                    'desastre_terremoto_cerrando',
+                    '⏳ Cerrando en 2 segundos...',
+                  ),
+                  style: const TextStyle(color: Colors.white54, fontSize: 10),
                 ),
               ],
             ),
@@ -2981,23 +3048,26 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
               children: [
                 const Text('🌾', style: TextStyle(fontSize: 60)),
                 const SizedBox(height: 12),
-                const Text(
-                  '🌾 PLAGA EN CULTIVOS 🌾',
-                  style: TextStyle(
+                Text(
+                  _t('desastre_plaga_titulo', '🌾 PLAGA EN CULTIVOS 🌾'),
+                  style: const TextStyle(
                     color: Colors.amber,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'Las plagas devoran tus cultivos...',
-                  style: TextStyle(color: Colors.white70),
+                Text(
+                  _t(
+                    'desastre_plaga_mensaje',
+                    'Las plagas devoran tus cultivos...',
+                  ),
+                  style: const TextStyle(color: Colors.white70),
                 ),
                 const SizedBox(height: 16),
-                const Text(
-                  '⏳ Cerrando en 2 segundos...',
-                  style: TextStyle(color: Colors.white54, fontSize: 10),
+                Text(
+                  _t('desastre_plaga_cerrando', '⏳ Cerrando en 2 segundos...'),
+                  style: const TextStyle(color: Colors.white54, fontSize: 10),
                 ),
               ],
             ),
@@ -3091,23 +3161,29 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
               children: [
                 const Text('🦠', style: TextStyle(fontSize: 60)),
                 const SizedBox(height: 12),
-                const Text(
-                  '🦠 EPIDEMIA 🦠',
-                  style: TextStyle(
+                Text(
+                  _t('desastre_epidemia_titulo', '🦠 EPIDEMIA 🦠'),
+                  style: const TextStyle(
                     color: Colors.amber,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'Una enfermedad azota a tus unidades...',
-                  style: TextStyle(color: Colors.white70),
+                Text(
+                  _t(
+                    'desastre_epidemia_mensaje',
+                    'Una enfermedad azota a tus unidades...',
+                  ),
+                  style: const TextStyle(color: Colors.white70),
                 ),
                 const SizedBox(height: 16),
-                const Text(
-                  '⏳ Cerrando en 2 segundos...',
-                  style: TextStyle(color: Colors.white54, fontSize: 10),
+                Text(
+                  _t(
+                    'desastre_epidemia_cerrando',
+                    '⏳ Cerrando en 2 segundos...',
+                  ),
+                  style: const TextStyle(color: Colors.white54, fontSize: 10),
                 ),
               ],
             ),
@@ -3244,9 +3320,10 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text(
-                  '🎲 TIRANDO DADOS...',
-                  style: TextStyle(
+                Text(
+                  _translations['lanzar_dados_jugador'] ??
+                      '🎲 TIRANDO DADOS...',
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -3326,9 +3403,9 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text(
-                  '🤖 IA TIRANDO DADOS...',
-                  style: TextStyle(
+                Text(
+                  _translations['lanzar_dados_ia'] ?? '🤖 IA TIRANDO DADOS...',
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -5274,9 +5351,9 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                 const SizedBox(height: 16),
 
                 // Texto de victoria
-                const Text(
-                  '🏆 ¡VICTORIA! 🏆',
-                  style: TextStyle(
+                Text(
+                  _t('victoria_titulo', '🏆 ¡VICTORIA! 🏆'),
+                  style: const TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
@@ -5303,7 +5380,8 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                     border: Border.all(color: Colors.amber, width: 2),
                   ),
                   child: Text(
-                    ganador.civilizacion.nombreId,
+                    _translations[ganador.civilizacion.nombreId] ??
+                        ganador.civilizacion.nombreId,
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -5372,7 +5450,8 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          ganador.monumentoEnCampo.nombre,
+                          _translations[ganador.monumentoEnCampo.nombre] ??
+                              ganador.monumentoEnCampo.nombre,
                           style: const TextStyle(
                             color: Colors.white70,
                             fontSize: 10,
@@ -5384,7 +5463,6 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                 ),
                 const SizedBox(height: 24),
 
-                // Botón para reiniciar
                 // Botón para reiniciar
                 ElevatedButton(
                   onPressed: () {
@@ -5413,9 +5491,12 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                       borderRadius: BorderRadius.circular(30),
                     ),
                   ),
-                  child: const Text(
-                    'REINICIAR PARTIDA',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  child: Text(
+                    _t('reiniciar_partida', 'REINICIAR PARTIDA'),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
                   ),
                 ),
               ],
@@ -5512,7 +5593,8 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                   const Icon(Icons.swap_horiz, color: Colors.amber, size: 60),
                   const SizedBox(height: 16),
                   Text(
-                    'TURNO FINALIZADO',
+                    _translations['cambio_turno_finalizado'] ??
+                        'TURNO FINALIZADO',
                     style: TextStyle(
                       color: Colors.amber[200],
                       fontSize: 16,
@@ -5522,7 +5604,8 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    '🔄 Cambio de turno',
+                    _translations['cambio_turno_titulo'] ??
+                        '🔄 Cambio de turno',
                     style: TextStyle(
                       color: Colors.amber[400],
                       fontSize: 20,
@@ -5531,7 +5614,7 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Próximo jugador: ${jugadorSiguiente.civilizacion.nombreId}',
+                    '${_translations['cambio_turno_proximo_jugador'] ?? 'Próximo jugador: '}${_translations[jugadorSiguiente.civilizacion.nombreId] ?? jugadorSiguiente.civilizacion.nombreId}',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 18,
@@ -5540,7 +5623,7 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    '⚔️ ${jugadorSiguiente.civilizacion.nombreId} ⚔️',
+                    '⚔️ ${_translations[jugadorSiguiente.civilizacion.nombreId] ?? jugadorSiguiente.civilizacion.nombreId} ⚔️',
                     style: TextStyle(
                       color: Colors.amber[600],
                       fontSize: 20,

@@ -2922,7 +2922,7 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                 const Text('🌍', style: TextStyle(fontSize: 60)),
                 const SizedBox(height: 12),
                 Text(
-                  _t('desastre_terremoto_titulo', '🌍 TERREMOTO 🌍'),
+                  _t('desastre_terremoto_titulo', ''),
                   style: const TextStyle(
                     color: Colors.amber,
                     fontSize: 20,
@@ -2931,15 +2931,12 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  _t('desastre_terremoto_mensaje', 'La tierra tiembla...'),
+                  _t('desastre_terremoto_mensaje', ''),
                   style: const TextStyle(color: Colors.white70),
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  _t(
-                    'desastre_terremoto_cerrando',
-                    '⏳ Cerrando en 2 segundos...',
-                  ),
+                  _t('desastre_terremoto_cerrando', ''),
                   style: const TextStyle(color: Colors.white54, fontSize: 10),
                 ),
               ],
@@ -3049,7 +3046,7 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                 const Text('🌾', style: TextStyle(fontSize: 60)),
                 const SizedBox(height: 12),
                 Text(
-                  _t('desastre_plaga_titulo', '🌾 PLAGA EN CULTIVOS 🌾'),
+                  _t('desastre_plaga_titulo', ''),
                   style: const TextStyle(
                     color: Colors.amber,
                     fontSize: 20,
@@ -3058,15 +3055,12 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  _t(
-                    'desastre_plaga_mensaje',
-                    'Las plagas devoran tus cultivos...',
-                  ),
+                  _t('desastre_plaga_mensaje', ''),
                   style: const TextStyle(color: Colors.white70),
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  _t('desastre_plaga_cerrando', '⏳ Cerrando en 2 segundos...'),
+                  _t('desastre_plaga_cerrando', ''),
                   style: const TextStyle(color: Colors.white54, fontSize: 10),
                 ),
               ],
@@ -3162,7 +3156,7 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                 const Text('🦠', style: TextStyle(fontSize: 60)),
                 const SizedBox(height: 12),
                 Text(
-                  _t('desastre_epidemia_titulo', '🦠 EPIDEMIA 🦠'),
+                  _t('desastre_epidemia_titulo', ''),
                   style: const TextStyle(
                     color: Colors.amber,
                     fontSize: 20,
@@ -3171,18 +3165,12 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  _t(
-                    'desastre_epidemia_mensaje',
-                    'Una enfermedad azota a tus unidades...',
-                  ),
+                  _t('desastre_epidemia_mensaje', ''),
                   style: const TextStyle(color: Colors.white70),
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  _t(
-                    'desastre_epidemia_cerrando',
-                    '⏳ Cerrando en 2 segundos...',
-                  ),
+                  _t('desastre_epidemia_cerrando', ''),
                   style: const TextStyle(color: Colors.white54, fontSize: 10),
                 ),
               ],

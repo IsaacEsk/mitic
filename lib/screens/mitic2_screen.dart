@@ -151,14 +151,15 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
     final otrasCivs =
         civilizaciones.values.where((c) => c.id != miCivilizacion.id).toList();
 
+    //ENEMIGO RANDOM
     final civEnemigo =
         otrasCivs.isNotEmpty
             ? otrasCivs[Random().nextInt(otrasCivs.length)]
             : civilizaciones.values.first;
 
-    // final civEnemigo = civilizaciones['romanos']!;
+    // final civEnemigo = civilizaciones['francia']!;
     // print(
-    //   '🤖 ENEMIGO FORZADO: ${civEnemigo.nombreId} (para pruebas de IA China)',
+    //   '🤖 ENEMIGO FORZADO: ${civEnemigo.nombreId} (para pruebas de IA Francia)',
     // );
 
     // 👇 SELECCIONAR ENEMIGO ALEATORIO ENTRE MAYAS, AZTECAS Y CHINOS

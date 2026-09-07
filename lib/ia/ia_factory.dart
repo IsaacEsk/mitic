@@ -13,6 +13,7 @@ import 'package:mitic/models/torre_model.dart';
 import 'ia_base.dart';
 import 'ia_maya.dart';
 import 'ia_azteca.dart';
+import 'ia_francia.dart';
 
 class IAFactory {
   static IABase crearIA({
@@ -91,6 +92,18 @@ class IAFactory {
         onInvocar: onInvocar,
         onMejorar: onMejorar,
       ),
+      () => IAFrancia(
+        juego: juego,
+        yo: yo,
+        enemigo: enemigo,
+        onPasarTurno: onPasarTurno,
+        aldeanos: aldeanos,
+        cultivos: cultivos,
+        torres: torres,
+        hospitales: hospitales,
+        onInvocar: onInvocar,
+        onMejorar: onMejorar,
+      ),
     ];
 
     switch (civId) {
@@ -148,6 +161,19 @@ class IAFactory {
         );
       case 'romanos':
         return IARomanos(
+          juego: juego,
+          yo: yo,
+          enemigo: enemigo,
+          onPasarTurno: onPasarTurno,
+          aldeanos: aldeanos,
+          cultivos: cultivos,
+          torres: torres,
+          hospitales: hospitales,
+          onInvocar: onInvocar,
+          onMejorar: onMejorar,
+        );
+      case 'francia':
+        return IAFrancia(
           juego: juego,
           yo: yo,
           enemigo: enemigo,

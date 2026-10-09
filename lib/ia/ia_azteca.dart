@@ -235,12 +235,7 @@ class IAAzteca extends IABase {
     );
     print('   📊 Guerreros: $cantidad, Puntos: $puntosADonar');
 
-    onMejorar(
-      'guerrero',
-      elegido['fila'],
-      elegido['columna'],
-      puntosADonar * 2,
-    );
+    onMejorar('guerrero', elegido['fila'], elegido['columna'], puntosADonar);
   }
 
   void _mejorarAldeano() {

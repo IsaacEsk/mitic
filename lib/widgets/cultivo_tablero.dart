@@ -87,7 +87,10 @@ class CultivoTablero extends StatelessWidget {
                             '${cultivo.puntosPorTurnoActual}',
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: statHeight * 0.5,
+                              fontSize: _calcularFontSize(
+                                cultivo.puntosPorTurnoActual,
+                                statHeight,
+                              ),
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -101,7 +104,10 @@ class CultivoTablero extends StatelessWidget {
                             '${cultivo.vidaActual}',
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: statHeight * 0.5,
+                              fontSize: _calcularFontSize(
+                                cultivo.vidaActual,
+                                statHeight,
+                              ),
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -116,5 +122,20 @@ class CultivoTablero extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  double _calcularFontSize(int valor, double statHeight) {
+    final String texto = valor.toString();
+    final int longitud = texto.length;
+
+    if (longitud <= 3) {
+      return statHeight * 0.5; // Normal (hasta 999)
+    } else if (longitud <= 4) {
+      return statHeight * 0.4; // Para 4 dígitos (1000-9999)
+    } else if (longitud <= 5) {
+      return statHeight * 0.3; // Para 5 dígitos (10000-99999)
+    } else {
+      return statHeight * 0.2; // Para 6+ dígitos
+    }
   }
 }

@@ -6,5 +6,5 @@ mkdir docs
 Copy-Item -Recurse build/web/* docs/
 Copy-Item -Recurse assets docs/
 git add docs
-git commit -m "ia francia y traducciones"
+git commit -m "Pruebas online"
 git push

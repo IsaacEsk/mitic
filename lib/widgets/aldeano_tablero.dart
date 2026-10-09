@@ -79,6 +79,7 @@ class AldeanoTablero extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
+                      // Y en tu Row ya arreglado:
                       Row(
                         children: [
                           Text('🔨', style: TextStyle(fontSize: statIconSize)),
@@ -87,7 +88,10 @@ class AldeanoTablero extends StatelessWidget {
                             '${aldeano.puntosReconstruccionActual}',
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: statHeight * 0.5,
+                              fontSize: _calcularFontSize(
+                                aldeano.puntosReconstruccionActual,
+                                statHeight,
+                              ),
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -101,7 +105,10 @@ class AldeanoTablero extends StatelessWidget {
                             '${aldeano.vidaActual}',
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: statHeight * 0.5,
+                              fontSize: _calcularFontSize(
+                                aldeano.vidaActual,
+                                statHeight,
+                              ),
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -116,5 +123,20 @@ class AldeanoTablero extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  double _calcularFontSize(int valor, double statHeight) {
+    final String texto = valor.toString();
+    final int longitud = texto.length;
+
+    if (longitud <= 3) {
+      return statHeight * 0.5; // Normal (hasta 999)
+    } else if (longitud <= 4) {
+      return statHeight * 0.4; // Para 4 dígitos (1000-9999)
+    } else if (longitud <= 5) {
+      return statHeight * 0.3; // Para 5 dígitos (10000-99999)
+    } else {
+      return statHeight * 0.2; // Para 6+ dígitos
+    }
   }
 }

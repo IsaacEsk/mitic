@@ -123,7 +123,7 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
       civilizacion: miCivilizacion,
       guerrerosSeleccionados: misGuerrerosTraducidos,
       monumentoEnCampo: MonumentField.fromCivilizacion(miCivilizacion),
-      puntosAcumulados: 0,
+      puntosAcumulados: 2000,
       turno: 0,
       esEnemigo: false,
     );
@@ -152,15 +152,15 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
         civilizaciones.values.where((c) => c.id != miCivilizacion.id).toList();
 
     //ENEMIGO RANDOM
-    // final civEnemigo =
-    //     otrasCivs.isNotEmpty
-    //         ? otrasCivs[Random().nextInt(otrasCivs.length)]
-    //         : civilizaciones.values.first;
+    final civEnemigo =
+        otrasCivs.isNotEmpty
+            ? otrasCivs[Random().nextInt(otrasCivs.length)]
+            : civilizaciones.values.first;
 
-    final civEnemigo = civilizaciones['egipcios']!;
-    print(
-      '🤖 ENEMIGO FORZADO: ${civEnemigo.nombreId} (para pruebas de IA Egipto)',
-    );
+    // final civEnemigo = civilizaciones['jerusalen']!;
+    // print(
+    //   '🤖 ENEMIGO FORZADO: ${civEnemigo.nombreId} (para pruebas de IA Egipto)',
+    // );
 
     // 👇 SELECCIONAR ENEMIGO ALEATORIO ENTRE MAYAS, AZTECAS Y CHINOS
     // final List<String> civsConIA = ['maya', 'azteca', 'china'];
@@ -288,83 +288,91 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
     return Scaffold(
       backgroundColor: Colors.grey[900],
       body: SafeArea(
-        child: IgnorePointer(
-          ignoring: juego.turnoActual != 0,
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final double ancho = constraints.maxWidth;
-              final double alto = constraints.maxHeight;
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final double ancho = constraints.maxWidth;
+            final double alto = constraints.maxHeight;
 
-              // Calcular tamaño de celda (inteligente)
-              double ladoPorAncho = ancho / 5;
-              //double ladoPorAlto = alto / 11;
-              double ladoPorAlto = alto / 9.2;
-              double ladoCelda =
-                  ladoPorAncho < ladoPorAlto ? ladoPorAncho : ladoPorAlto;
+            // Calcular tamaño de celda (inteligente)
+            double ladoPorAncho = ancho / 5;
+            //double ladoPorAlto = alto / 11;
+            double ladoPorAlto = alto / 9.2;
+            double ladoCelda =
+                ladoPorAncho < ladoPorAlto ? ladoPorAncho : ladoPorAlto;
 
-              return Center(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxWidth: ladoCelda * 5,
-                    maxHeight: ladoCelda * 9.2,
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Stats enemigo (Jugador 2)
-                      _buildStatsFila(
+            return Center(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: ladoCelda * 5,
+                  maxHeight: ladoCelda * 9.2,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Stats enemigo (Jugador 2)
+                    _buildStatsFila(
+                      ladoCelda: ladoCelda,
+                      jugador: juego.jugadores[1],
+                      esEnemigo: true,
+                    ),
+
+                    // Tablero enemigo (filaIndex 0 a 3)
+                    ...List.generate(4, (filaIndex) {
+                      return _buildTableroFila(
+                        filaIndex: filaIndex,
                         ladoCelda: ladoCelda,
                         jugador: juego.jugadores[1],
                         esEnemigo: true,
-                      ),
+                      );
+                    }),
 
-                      // Tablero enemigo (filaIndex 0 a 3)
-                      ...List.generate(4, (filaIndex) {
-                        return _buildTableroFila(
-                          filaIndex: filaIndex,
-                          ladoCelda: ladoCelda,
-                          jugador: juego.jugadores[1],
-                          esEnemigo: true,
-                        );
-                      }),
-
-                      // Línea divisoria
-                      SizedBox(
-                        height: ladoCelda * .2,
-                        child: Center(
-                          child: Text(
-                            '⚔️ MITIC 2.0 ⚔️',
-                            style: TextStyle(
-                              color: Colors.amber,
-                              fontWeight: FontWeight.bold,
-                              fontSize: ladoCelda * 0.1,
-                            ),
+                    // Línea divisoria
+                    SizedBox(
+                      height: ladoCelda * .2,
+                      child: Center(
+                        child: Text(
+                          '⚔️ MITIC 2.0 ⚔️',
+                          style: TextStyle(
+                            color: Colors.amber,
+                            fontWeight: FontWeight.bold,
+                            fontSize: ladoCelda * 0.1,
                           ),
                         ),
                       ),
+                    ),
 
-                      // Tablero propio (Jugador 1)
-                      ...List.generate(4, (filaIndex) {
-                        return _buildTableroFila(
-                          filaIndex: filaIndex,
-                          ladoCelda: ladoCelda,
-                          jugador: juego.jugadores[0],
-                          esEnemigo: false,
-                        );
-                      }),
+                    // El jugador solo puede interactuar con su tablero durante
+                    // su turno. AbsorbPointer también bloquea eventos de los
+                    // widgets interactivos que viven dentro de cada casilla.
+                    AbsorbPointer(
+                      absorbing: juego.turnoActual != 0,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Tablero propio (Jugador 1)
+                          ...List.generate(4, (filaIndex) {
+                            return _buildTableroFila(
+                              filaIndex: filaIndex,
+                              ladoCelda: ladoCelda,
+                              jugador: juego.jugadores[0],
+                              esEnemigo: false,
+                            );
+                          }),
 
-                      // Stats propios (Jugador 1)
-                      _buildStatsFila(
-                        ladoCelda: ladoCelda,
-                        jugador: juego.jugadores[0],
-                        esEnemigo: false,
+                          // Stats propios (Jugador 1), incluido PASAR
+                          _buildStatsFila(
+                            ladoCelda: ladoCelda,
+                            jugador: juego.jugadores[0],
+                            esEnemigo: false,
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              );
-            },
-          ),
+              ),
+            );
+          },
         ),
       ),
     );
@@ -425,13 +433,16 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
               ),
               child: Center(
                 child: ElevatedButton(
-                  onPressed: () {
-                    if (juego.turnoActual != 0) return;
-                    print('🎮 Botón PASAR presionado');
-                    _cambiarTurno();
-                  },
+                  onPressed:
+                      juego.turnoActual == 0
+                          ? () {
+                            print('🎮 Botón PASAR presionado');
+                            _cambiarTurno();
+                          }
+                          : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.amber,
+                    backgroundColor:
+                        juego.turnoActual == 0 ? Colors.amber : Colors.grey,
                     minimumSize: Size(ladoCelda * 0.8, ladoCelda * 0.3),
                     padding: EdgeInsets.zero,
                   ),
@@ -1010,6 +1021,7 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
 
     // 👇 DECIDIR SI MOSTRAR BOTÓN DE ATAQUE
     final bool puedeAtacar = !yaAtaco && (tableroVacio || tieneObjetivo);
+    final bool puedeMejorar = jugador.puntosAcumulados > 0;
 
     showDialog(
       context: context,
@@ -1076,66 +1088,54 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                   ),
 
                 // Espaciado solo si el botón de ataque está presente
-                if (!guerrero.yaAtacoEsteTurno) const SizedBox(height: 8),
+                if (puedeAtacar || puedeMejorar) const SizedBox(height: 8),
 
                 //const SizedBox(height: 8),
-                _buildBotonAccion(
-                  icon: '💪',
-                  texto: _t('mejorar_ataque', 'MEJORAR ATAQUE'),
-                  color: Colors.orange,
-                  onPressed: () {
-                    if (juego.turnoActual != 0) return;
-                    Navigator.pop(context);
-                    _mostrarModalPuntos(
-                      titulo: '💪 ${_t('mejorar_ataque', 'MEJORAR ATAQUE')}',
-                      icono: '⚔️',
-                      valorActual: guerrero.ataqueActual,
-                      puntosMaximos: jugador.puntosAcumulados,
-                      onConfirmar: (puntos) {
-                        setState(() {
-                          guerrero.ataqueActual += puntos;
-                          jugador.puntosAcumulados -= puntos;
-                        });
-                        // ScaffoldMessenger.of(context).showSnackBar(
-                        //   SnackBar(
-                        //     content: Text('✅ +$puntos ⚔️ a ataque'),
-                        //     backgroundColor: Colors.green[700],
-                        //   ),
-                        // );
-                      },
-                    );
-                  },
-                ),
-
-                const SizedBox(height: 8),
-
-                _buildBotonAccion(
-                  icon: '❤️',
-                  texto: _t('curar', 'CURAR'),
-                  color: Colors.green,
-                  onPressed: () {
-                    if (juego.turnoActual != 0) return;
-                    Navigator.pop(context);
-                    _mostrarModalPuntos(
-                      titulo: '❤️ ${_t('curar', 'CURAR')}',
-                      icono: '❤️',
-                      valorActual: guerrero.vidaActual,
-                      puntosMaximos: jugador.puntosAcumulados,
-                      onConfirmar: (puntos) {
-                        setState(() {
-                          guerrero.vidaActual += puntos;
-                          jugador.puntosAcumulados -= puntos;
-                        });
-                        // ScaffoldMessenger.of(context).showSnackBar(
-                        //   SnackBar(
-                        //     content: Text('✅ +$puntos ❤️ a vida'),
-                        //     backgroundColor: Colors.green[700],
-                        //   ),
-                        // );
-                      },
-                    );
-                  },
-                ),
+                if (puedeMejorar) ...[
+                  _buildBotonAccion(
+                    icon: '💪',
+                    texto: _t('mejorar_ataque', 'MEJORAR ATAQUE'),
+                    color: Colors.orange,
+                    onPressed: () {
+                      if (juego.turnoActual != 0) return;
+                      Navigator.pop(context);
+                      _mostrarModalPuntos(
+                        titulo: '💪 ${_t('mejorar_ataque', 'MEJORAR ATAQUE')}',
+                        icono: '⚔️',
+                        valorActual: guerrero.ataqueActual,
+                        puntosMaximos: jugador.puntosAcumulados,
+                        onConfirmar: (puntos) {
+                          setState(() {
+                            guerrero.ataqueActual += puntos;
+                            jugador.puntosAcumulados -= puntos;
+                          });
+                        },
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  _buildBotonAccion(
+                    icon: '❤️',
+                    texto: _t('curar', 'CURAR'),
+                    color: Colors.green,
+                    onPressed: () {
+                      if (juego.turnoActual != 0) return;
+                      Navigator.pop(context);
+                      _mostrarModalPuntos(
+                        titulo: '❤️ ${_t('curar', 'CURAR')}',
+                        icono: '❤️',
+                        valorActual: guerrero.vidaActual,
+                        puntosMaximos: jugador.puntosAcumulados,
+                        onConfirmar: (puntos) {
+                          setState(() {
+                            guerrero.vidaActual += puntos;
+                            jugador.puntosAcumulados -= puntos;
+                          });
+                        },
+                      );
+                    },
+                  ),
+                ],
 
                 const SizedBox(height: 8),
 
@@ -1843,6 +1843,7 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
   void _mostrarModalAldeano(CasillaAldeano casillaAldeano) {
     final jugador = juego.jugadorActual;
     final aldeano = casillaAldeano.aldeano;
+    final puedeMejorar = jugador.puntosAcumulados > 0;
 
     showDialog(
       context: context,
@@ -1895,64 +1896,55 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
                 const SizedBox(height: 16),
 
                 // Botones de acción
-                _buildBotonAccion(
-                  icon: '🔨',
-                  texto: _t('mejorar_reconstruccion', 'MEJORAR RECONSTRUCCIÓN'),
-                  color: Colors.orange,
-                  onPressed: () {
-                    Navigator.pop(context);
-                    _mostrarModalPuntos(
-                      titulo:
-                          '🔨 ${_t('mejorar_reconstruccion', 'MEJORAR RECONSTRUCCIÓN')}',
-                      icono: '🔨',
-                      valorActual: aldeano.puntosReconstruccionActual,
-                      puntosMaximos: jugador.puntosAcumulados,
-                      onConfirmar: (puntos) {
-                        setState(() {
-                          aldeano.puntosReconstruccionActual += puntos;
-                          jugador.puntosAcumulados -= puntos;
-                        });
-                        // ScaffoldMessenger.of(context).showSnackBar(
-                        //   SnackBar(
-                        //     content: Text('✅ +$puntos 🔨 a reconstrucción'),
-                        //     backgroundColor: Colors.green[700],
-                        //   ),
-                        // );
-                      },
-                    );
-                  },
-                ),
+                if (puedeMejorar) ...[
+                  _buildBotonAccion(
+                    icon: '🔨',
+                    texto: _t(
+                      'mejorar_reconstruccion',
+                      'MEJORAR RECONSTRUCCIÓN',
+                    ),
+                    color: Colors.orange,
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _mostrarModalPuntos(
+                        titulo:
+                            '🔨 ${_t('mejorar_reconstruccion', 'MEJORAR RECONSTRUCCIÓN')}',
+                        icono: '🔨',
+                        valorActual: aldeano.puntosReconstruccionActual,
+                        puntosMaximos: jugador.puntosAcumulados,
+                        onConfirmar: (puntos) {
+                          setState(() {
+                            aldeano.puntosReconstruccionActual += puntos;
+                            jugador.puntosAcumulados -= puntos;
+                          });
+                        },
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  _buildBotonAccion(
+                    icon: '❤️',
+                    texto: _t('curar', 'CURAR'),
+                    color: Colors.green,
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _mostrarModalPuntos(
+                        titulo: '❤️ ${_t('curar', 'CURAR')} ALDEANO',
+                        icono: '❤️',
+                        valorActual: aldeano.vidaActual,
+                        puntosMaximos: jugador.puntosAcumulados,
+                        onConfirmar: (puntos) {
+                          setState(() {
+                            aldeano.vidaActual += puntos;
+                            jugador.puntosAcumulados -= puntos;
+                          });
+                        },
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                ],
 
-                const SizedBox(height: 8),
-
-                _buildBotonAccion(
-                  icon: '❤️',
-                  texto: _t('curar', 'CURAR'),
-                  color: Colors.green,
-                  onPressed: () {
-                    Navigator.pop(context);
-                    _mostrarModalPuntos(
-                      titulo: '❤️ ${_t('curar', 'CURAR')} ALDEANO',
-                      icono: '❤️',
-                      valorActual: aldeano.vidaActual,
-                      puntosMaximos: jugador.puntosAcumulados,
-                      onConfirmar: (puntos) {
-                        setState(() {
-                          aldeano.vidaActual += puntos;
-                          jugador.puntosAcumulados -= puntos;
-                        });
-                        // ScaffoldMessenger.of(context).showSnackBar(
-                        //   SnackBar(
-                        //     content: Text('✅ +$puntos ❤️ al aldeano'),
-                        //     backgroundColor: Colors.green[700],
-                        //   ),
-                        // );
-                      },
-                    );
-                  },
-                ),
-
-                const SizedBox(height: 8),
                 _buildBotonAccion(
                   icon: '🚶',
                   texto: _t('mover', 'MOVER'),
@@ -2885,7 +2877,7 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
 
     // Hay terremoto, mostrar modal
     print('🌍🌍🌍 ¡TERREMOTO! 🌍🌍🌍');
-    _aplicarTerremoto();
+    final monumentoDestruido = _aplicarTerremoto();
     // Reiniciar contador para el próximo terremoto
     _contadorTerremoto = Random().nextInt(11) + 5; // 5 a 15
     print('🌍 Próximo terremoto en $_contadorTerremoto turnos');
@@ -2897,7 +2889,13 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
         Future.delayed(const Duration(seconds: 2), () {
           if (context.mounted) {
             Navigator.of(context).pop();
-            onComplete(); // 👈 Continuar después del modal
+            if (monumentoDestruido) {
+              _mostrarModalVictoria(juego.oponente);
+              return;
+            }
+            if (!_juegoTerminado) {
+              onComplete(); // Continuar después del modal
+            }
           }
         });
 
@@ -2948,13 +2946,10 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
     );
   }
 
-  void _aplicarTerremoto() {
-    final jugador = juego.jugadorActual;
-
-    // Obtener min y max de edificios (torres, hospitales, monumento)
+  bool _aplicarTerremoto() {
+    // La magnitud del terremoto se calcula solo con torres y hospitales.
     final edificios = _getMinMaxVidaPorTipo(TipoCasilla.torre);
     final hospitales = _getMinMaxVidaPorTipo(TipoCasilla.hospital);
-    //final monumento = _getMinMaxVidaPorTipo(TipoCasilla.monumento);
 
     // Combinar todos los valores
     int minGlobal = 999999;
@@ -2962,32 +2957,34 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
 
     if (edificios['min']! > 0) minGlobal = min(minGlobal, edificios['min']!);
     if (hospitales['min']! > 0) minGlobal = min(minGlobal, hospitales['min']!);
-    //if (monumento['min']! > 0) minGlobal = min(minGlobal, monumento['min']!);
 
     if (edificios['max']! > 0) maxGlobal = max(maxGlobal, edificios['max']!);
     if (hospitales['max']! > 0) maxGlobal = max(maxGlobal, hospitales['max']!);
-    //if (monumento['max']! > 0) maxGlobal = max(maxGlobal, monumento['max']!);
 
-    if (minGlobal == 999999) return; // No hay edificios
+    if (minGlobal == 999999) return false; // No hay edificios
 
     // Daño aleatorio entre min y max
     final dano = Random().nextInt(maxGlobal - minGlobal + 1) + minGlobal;
     print('🌍 Daño del terremoto: $dano (entre $minGlobal y $maxGlobal)');
 
-    // Aplicar daño a TODOS los edificios
+    // Aplicar el daño a todas las estructuras, incluido el monumento.
     _aplicarDanoATodos(TipoCasilla.torre, dano);
     _aplicarDanoATodos(TipoCasilla.hospital, dano);
-    _aplicarDanoATodos(TipoCasilla.monumento, dano);
+    return _aplicarDanoATodos(TipoCasilla.monumento, dano);
   }
 
-  void _aplicarDanoATodos(TipoCasilla tipo, int dano) {
+  bool _aplicarDanoATodos(TipoCasilla tipo, int dano) {
     final jugador = juego.jugadorActual;
+    var monumentoDestruido = false;
 
     for (int fila = 0; fila < 4; fila++) {
       for (int col = 0; col < 5; col++) {
         final casilla = jugador.tablero.obtenerCasillaPorIndices(fila, col);
         if (casilla.tipo == tipo) {
-          _aplicarDano(casilla, dano);
+          final murio = _aplicarDano(casilla, dano, mostrarVictoria: false);
+          if (tipo == TipoCasilla.monumento && murio) {
+            monumentoDestruido = true;
+          }
 
           // Si murió, eliminar la casilla
           if (_getVidaDeCasilla(casilla) <= 0) {
@@ -2996,6 +2993,8 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
         }
       }
     }
+
+    return monumentoDestruido;
   }
 
   void _hayPlaga(VoidCallback onComplete) {
@@ -5052,14 +5051,16 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
   //   }
   // }
 
-  bool _aplicarDano(dynamic objetivo, int dano) {
+  bool _aplicarDano(dynamic objetivo, int dano, {bool mostrarVictoria = true}) {
     switch (objetivo.tipo) {
       case TipoCasilla.monumento:
         final monumento = objetivo as CasillaMonumento;
         monumento.vidaActual -= dano;
         if (monumento.vidaActual <= 0) {
           print('🏆 MONUMENTO DESTRUIDO');
-          _mostrarModalVictoria(juego.jugadorActual);
+          if (mostrarVictoria) {
+            _mostrarModalVictoria(juego.jugadorActual);
+          }
           return true;
         }
         break;
@@ -5677,6 +5678,27 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
     print('🎮 MEJORAR IA: $tipo en ($fila,$columna) con $puntos puntos');
 
     final jugador = juego.jugadorActual;
+    if (fila < 0 ||
+        fila >= Tablero.filas ||
+        columna < 0 ||
+        columna >= Tablero.columnas) {
+      print('❌ IA no puede mejorar: coordenadas inválidas ($fila,$columna)');
+      return;
+    }
+    if (puntos <= 0 || jugador.puntosAcumulados <= 0) {
+      print(
+        '❌ IA no puede mejorar con $puntos puntos; saldo disponible: ${jugador.puntosAcumulados}',
+      );
+      return;
+    }
+
+    final puntosAutorizados = min(puntos, jugador.puntosAcumulados);
+    if (puntosAutorizados < puntos) {
+      print(
+        '⚠️ IA solicitó $puntos puntos, se limitará a $puntosAutorizados disponibles',
+      );
+    }
+
     final casilla = jugador.tablero.obtenerCasillaPorIndices(fila, columna);
 
     setState(() {
@@ -5684,45 +5706,45 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
         case 'hospital':
           if (casilla.tipo == TipoCasilla.hospital) {
             final hospital = (casilla as CasillaHospital).hospital;
-            hospital.poderCuracionActual += puntos;
-            jugador.puntosAcumulados -= puntos;
-            print('   ✅ Hospital mejorado: +$puntos curacion');
+            hospital.poderCuracionActual += puntosAutorizados;
+            jugador.puntosAcumulados -= puntosAutorizados;
+            print('   ✅ Hospital mejorado: +$puntosAutorizados curacion');
           }
           break;
 
         case 'cultivo':
           if (casilla.tipo == TipoCasilla.cultivo) {
             final cultivo = (casilla as CasillaCultivo).cultivo;
-            cultivo.puntosPorTurnoActual += puntos;
-            jugador.puntosAcumulados -= puntos;
-            print('   ✅ Cultivo mejorado: +$puntos producción');
+            cultivo.puntosPorTurnoActual += puntosAutorizados;
+            jugador.puntosAcumulados -= puntosAutorizados;
+            print('   ✅ Cultivo mejorado: +$puntosAutorizados producción');
           }
           break;
 
         case 'torre':
           if (casilla.tipo == TipoCasilla.torre) {
             final torre = (casilla as CasillaTorre).torre;
-            torre.ataqueActual += puntos;
-            jugador.puntosAcumulados -= puntos;
-            print('   ✅ Torre mejorada: +$puntos ataque');
+            torre.ataqueActual += puntosAutorizados;
+            jugador.puntosAcumulados -= puntosAutorizados;
+            print('   ✅ Torre mejorada: +$puntosAutorizados ataque');
           }
           break;
 
         case 'guerrero':
           if (casilla.tipo == TipoCasilla.guerrero) {
             final guerrero = (casilla as CasillaGuerrero).guerrero;
-            guerrero.ataqueActual += puntos;
-            jugador.puntosAcumulados -= puntos;
-            print('   ✅ Guerrero mejorado: +$puntos ataque');
+            guerrero.ataqueActual += puntosAutorizados;
+            jugador.puntosAcumulados -= puntosAutorizados;
+            print('   ✅ Guerrero mejorado: +$puntosAutorizados ataque');
           }
           break;
 
         case 'aldeano':
           if (casilla.tipo == TipoCasilla.aldeano) {
             final aldeano = (casilla as CasillaAldeano).aldeano;
-            aldeano.puntosReconstruccionActual += puntos;
-            jugador.puntosAcumulados -= puntos;
-            print('   ✅ Aldeano mejorado: +$puntos reconstrucción');
+            aldeano.puntosReconstruccionActual += puntosAutorizados;
+            jugador.puntosAcumulados -= puntosAutorizados;
+            print('   ✅ Aldeano mejorado: +$puntosAutorizados reconstrucción');
           }
           break;
       }
@@ -5733,58 +5755,42 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
     print('🎮 INVOCAR IA: $tipo en ${fila}x$columna con id $id');
 
     final jugador = juego.jugadorActual;
+    if (fila < 0 ||
+        fila >= Tablero.filas ||
+        columna < 0 ||
+        columna >= Tablero.columnas) {
+      print('❌ IA no puede invocar: coordenadas inválidas ($fila,$columna)');
+      return;
+    }
+    if (!jugador.tablero.estaVacia(fila, columna)) {
+      print('❌ IA no puede invocar: casilla ($fila,$columna) ocupada');
+      return;
+    }
+
     final coordenada = jugador.tablero.obtenerCoordenadas(fila, columna);
 
     // ============================================
     // BUSCAR EL COSTO DEL ÍTEM A INVOCAR
     // ============================================
-    int costo = 0;
-
-    switch (tipo) {
-      case 'guerrero':
-        final guerreroBase = guerreros![id];
-        costo = guerreroBase!.costoInvocacion;
-        break;
-      case 'aldeano':
-        final aldeanoBase = aldeanos![id];
-        if (aldeanoBase == null) {
-          print('❌ Error: no se encontró aldeano con id $id');
-          return;
-        }
-        costo = aldeanoBase.costoInvocacion;
-        break;
-      case 'cultivo':
-        final cultivoBase = cultivos![id];
-        if (cultivoBase == null) {
-          print('❌ Error: no se encontró cultivo con id $id');
-          return;
-        }
-        costo = cultivoBase.costoInvocacion;
-        break;
-      case 'torre':
-        final torreBase = torres![id];
-        if (torreBase == null) {
-          print('❌ Error: no se encontró torre con id $id');
-          return;
-        }
-        costo = torreBase.costoInvocacion;
-        break;
-      case 'hospital':
-        final hospitalBase = hospitales![id];
-        if (hospitalBase == null) {
-          print('❌ Error: no se encontró hospital con id $id');
-          return;
-        }
-        costo = hospitalBase.costoInvocacion;
-        break;
+    final costo = switch (tipo) {
+      'guerrero' => guerreros?[id]?.costoInvocacion,
+      'aldeano' => aldeanos?[id]?.costoInvocacion,
+      'cultivo' => cultivos?[id]?.costoInvocacion,
+      'torre' => torres?[id]?.costoInvocacion,
+      'hospital' => hospitales?[id]?.costoInvocacion,
+      _ => null,
+    };
+    if (costo == null) {
+      print('❌ IA no puede invocar: tipo o elemento inválido ($tipo, $id)');
+      return;
     }
 
     // ============================================
     // VERIFICAR QUE TENGA PUNTOS SUFICIENTES
     // ============================================
-    if (jugador.puntosAcumulados < costo) {
+    if (costo < 0 || jugador.puntosAcumulados < costo) {
       print(
-        '❌ IA no tiene puntos suficientes (${jugador.puntosAcumulados} < $costo)',
+        '❌ IA no puede pagar la invocación (${jugador.puntosAcumulados} disponibles, costo $costo)',
       );
       return;
     }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mitic/screens/selectCivScreen.dart';
+import 'package:mitic/screens/game_mode_screen.dart';
 import 'package:mitic/services/translationService.dart';
 
 class TutorialScreen extends StatefulWidget {
@@ -39,14 +39,13 @@ class _TutorialScreenState extends State<TutorialScreen> {
     return 'assets/images/tutorial/tutorial_$step.$extension';
   }
 
-  void _goToSelectCiv() {
+  void _goToGameMode() {
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(
         builder:
-            (context) => SelectCivScreen(
-              selectedLanguage: widget.selectedLanguage, // 👈 Pasar el idioma
-            ),
+            (context) =>
+                GameModeScreen(selectedLanguage: widget.selectedLanguage),
       ),
       (route) => false,
     );
@@ -58,8 +57,8 @@ class _TutorialScreenState extends State<TutorialScreen> {
         _currentStep++;
       });
     } else {
-      // Último paso -> ir a SelectCivScreen
-      _goToSelectCiv();
+      // Último paso -> elegir modo de juego
+      _goToGameMode();
     }
   }
 
@@ -197,7 +196,7 @@ class _TutorialScreenState extends State<TutorialScreen> {
                           TextButton(
                             onPressed:
                                 _currentStep == 0
-                                    ? _goToSelectCiv
+                                    ? _goToGameMode
                                     : _previousStep,
                             child: Text(
                               _currentStep == 0 ? saltarText : atrasText,

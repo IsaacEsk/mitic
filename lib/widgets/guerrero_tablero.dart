@@ -86,7 +86,10 @@ class GuerreroTablero extends StatelessWidget {
                             '${guerrero.ataqueActual}',
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: statHeight * 0.5,
+                              fontSize: _calcularFontSize(
+                                guerrero.ataqueActual,
+                                statHeight,
+                              ),
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -100,7 +103,10 @@ class GuerreroTablero extends StatelessWidget {
                             '${guerrero.vidaActual}',
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: statHeight * 0.5,
+                              fontSize: _calcularFontSize(
+                                guerrero.vidaActual,
+                                statHeight,
+                              ),
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -129,5 +135,29 @@ class GuerreroTablero extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  // Función más flexible con configuración
+  double _calcularFontSize(
+    int valor,
+    double statHeight, {
+    double baseMultiplier = 0.5,
+  }) {
+    final String texto = valor.toString();
+    final int longitud = texto.length;
+
+    // Mapa de configuración: [longitud] = multiplicador
+    final Map<int, double> config = {
+      3: baseMultiplier, // <= 3 dígitos: normal
+      4: baseMultiplier * 0.8, // 4 dígitos: 80% del tamaño
+      5: baseMultiplier * 0.6, // 5 dígitos: 60% del tamaño
+      6: baseMultiplier * 0.5, // 6 dígitos: 40% del tamaño
+    };
+
+    // Si es más de 6 dígitos, usar el mínimo
+    final double multiplier =
+        config[longitud.clamp(3, 6)] ?? baseMultiplier * 0.3;
+
+    return statHeight * multiplier;
   }
 }

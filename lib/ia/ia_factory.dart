@@ -14,6 +14,7 @@ import 'ia_base.dart';
 import 'ia_maya.dart';
 import 'ia_azteca.dart';
 import 'ia_egipto.dart';
+import 'ia_jerusalen.dart';
 import 'ia_francia.dart';
 
 class IAFactory {
@@ -82,6 +83,18 @@ class IAFactory {
         onMejorar: onMejorar,
       ),
       () => IARomanos(
+        juego: juego,
+        yo: yo,
+        enemigo: enemigo,
+        onPasarTurno: onPasarTurno,
+        aldeanos: aldeanos,
+        cultivos: cultivos,
+        torres: torres,
+        hospitales: hospitales,
+        onInvocar: onInvocar,
+        onMejorar: onMejorar,
+      ),
+      () => IAJerusalen(
         juego: juego,
         yo: yo,
         enemigo: enemigo,
@@ -200,6 +213,19 @@ class IAFactory {
         );
       case 'egipcios':
         return IAEgipto(
+          juego: juego,
+          yo: yo,
+          enemigo: enemigo,
+          onPasarTurno: onPasarTurno,
+          aldeanos: aldeanos,
+          cultivos: cultivos,
+          torres: torres,
+          hospitales: hospitales,
+          onInvocar: onInvocar,
+          onMejorar: onMejorar,
+        );
+      case 'jerusalen':
+        return IAJerusalen(
           juego: juego,
           yo: yo,
           enemigo: enemigo,

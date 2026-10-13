@@ -1,18 +1,28 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import '../models/online_room.dart';
+import '../models/online_room_setup.dart';
 import '../services/guerrero_service.dart';
+import '../services/online_rooms_service.dart';
 import '../models/guerrero_model.dart';
 import '../models/civilizacion_model.dart';
 import 'mitic2_screen.dart';
+import 'online_game_screen.dart';
 
 class SelectAliadosScreen extends StatefulWidget {
   final Civilizacion civilizacionSeleccionada;
   final String selectedLanguage;
+  final OnlineRoom? onlineRoom;
+  final String? uid;
 
   const SelectAliadosScreen({
     super.key,
     required this.civilizacionSeleccionada,
     required this.selectedLanguage,
-  });
+    this.onlineRoom,
+    this.uid,
+  }) : assert((onlineRoom == null) == (uid == null));
 
   @override
   State<SelectAliadosScreen> createState() => _SelectAliadosScreenState();
@@ -25,6 +35,12 @@ class _SelectAliadosScreenState extends State<SelectAliadosScreen> {
   Map<String, String> _translations = {};
   bool _cargando = true;
   String? _errorCarga;
+  StreamSubscription<OnlineRoomSetup>? _onlineSubscription;
+  OnlineRoomSetup? _onlineSetup;
+  String? _onlineError;
+  bool _onlineSaving = false;
+  bool _onlineSubmitted = false;
+  bool _openingOnlineGame = false;
 
   int get _maxAliados => 3;
   bool get _completo => _seleccionados.length == _maxAliados;
@@ -32,7 +48,180 @@ class _SelectAliadosScreenState extends State<SelectAliadosScreen> {
   @override
   void initState() {
     super.initState();
+    if (widget.onlineRoom != null) _listenForOnlineSetup();
     _cargarDatos();
+  }
+
+  bool get _isEnglish => widget.selectedLanguage == 'en';
+
+  String _onlineText(String key, String spanish, String english) =>
+      _translations[key] ?? (_isEnglish ? english : spanish);
+
+  void _listenForOnlineSetup() {
+    final room = widget.onlineRoom!;
+    _onlineSubscription = OnlineRoomsService.watchSetup(room.id).listen(
+      (setup) {
+        if (!mounted) return;
+        final room = widget.onlineRoom!;
+        final uid = widget.uid!;
+        if (setup.guestUid == null ||
+            (uid != room.hostUid && setup.guestUid != uid)) {
+          Navigator.pop(context);
+          return;
+        }
+        setState(() {
+          _onlineSetup = setup;
+          _onlineError = null;
+        });
+        _restoreOnlineSelection();
+        _openOnlineGameWhenReady();
+      },
+      onError: (Object error) {
+        if (mounted) setState(() => _onlineError = error.toString());
+      },
+    );
+  }
+
+  void _restoreOnlineSelection() {
+    if (_cargando || _onlineSubmitted || _onlineSetup == null) return;
+    final room = widget.onlineRoom!;
+    final uid = widget.uid!;
+    final role =
+        uid == room.hostUid
+            ? 'host'
+            : uid == room.guestUid
+            ? 'guest'
+            : null;
+    if (role == null) {
+      setState(
+        () =>
+            _onlineError = _onlineText(
+              'online_player_not_in_room',
+              'El jugador no pertenece a esta sala.',
+              'This player does not belong to this room.',
+            ),
+      );
+      return;
+    }
+
+    final savedIds = _onlineSetup!.playerForRole(role).allyIds;
+    if (savedIds.isEmpty) return;
+    final restored = <Guerrero>[];
+    for (final id in savedIds) {
+      for (final warrior in _todosLosGuerreros) {
+        if (warrior.id == id) {
+          restored.add(warrior);
+          break;
+        }
+      }
+    }
+    if (restored.length != 3) {
+      setState(() {
+        _onlineError = _onlineText(
+          'online_allies_not_restored',
+          'No se pudo restaurar la selección de aliados guardada.',
+          'The saved ally selection could not be restored.',
+        );
+      });
+      return;
+    }
+
+    setState(() {
+      _seleccionados
+        ..clear()
+        ..addAll(restored);
+      _guerrerosDisponibles.removeWhere(
+        (warrior) => savedIds.contains(warrior.id),
+      );
+      _onlineSubmitted = true;
+    });
+    _openOnlineGameWhenReady();
+  }
+
+  Future<void> _submitOnlineAllies() async {
+    if (widget.onlineRoom == null || !_completo || _onlineSaving) return;
+    setState(() {
+      _onlineSaving = true;
+      _onlineError = null;
+    });
+    try {
+      await OnlineRoomsService.saveAllies(
+        room: widget.onlineRoom!,
+        uid: widget.uid!,
+        allyIds: _seleccionados.map((warrior) => warrior.id).toList(),
+      );
+      if (!mounted) return;
+      setState(() {
+        _onlineSaving = false;
+        _onlineSubmitted = true;
+      });
+      _openOnlineGameWhenReady();
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _onlineSaving = false;
+        _onlineError = error.toString();
+      });
+    }
+  }
+
+  Future<void> _openOnlineGameWhenReady() async {
+    if (_openingOnlineGame ||
+        !(_onlineSetup?.bothCivilizationsSelected ?? false) ||
+        !(_onlineSetup?.bothPlayersReady ?? false)) {
+      return;
+    }
+
+    _openingOnlineGame = true;
+    try {
+      final initialized = await OnlineRoomsService.initializeGameIfReady(
+        widget.onlineRoom!,
+      );
+      if (!mounted) return;
+      if (!initialized) {
+        _openingOnlineGame = false;
+        return;
+      }
+      await Navigator.pushReplacement<void, void>(
+        context,
+        MaterialPageRoute<void>(
+          builder:
+              (context) => OnlineGameScreen(
+                room: widget.onlineRoom!,
+                uid: widget.uid!,
+                selectedLanguage: widget.selectedLanguage,
+              ),
+        ),
+      );
+    } catch (error) {
+      _openingOnlineGame = false;
+      if (mounted) setState(() => _onlineError = error.toString());
+    }
+  }
+
+  Future<void> _continueWithAllies() async {
+    if (widget.onlineRoom != null) {
+      await _submitOnlineAllies();
+      return;
+    }
+
+    final guerreroPrincipalId = '${widget.civilizacionSeleccionada.id}_001';
+    final guerreroPrincipal = _todosLosGuerreros.firstWhere(
+      (warrior) => warrior.id == guerreroPrincipalId,
+    );
+    final todosLosGuerreros = [guerreroPrincipal, ..._seleccionados];
+
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => Mitic2Screen(
+              civilizacionSeleccionada: widget.civilizacionSeleccionada,
+              aliadosSeleccionados: todosLosGuerreros,
+              selectedLanguage: widget.selectedLanguage,
+            ),
+      ),
+    );
   }
 
   Future<void> _cargarDatos() async {
@@ -64,6 +253,8 @@ class _SelectAliadosScreenState extends State<SelectAliadosScreen> {
         _errorCarga = null;
         _cargando = false;
       });
+      _restoreOnlineSelection();
+      _openOnlineGameWhenReady();
       print('🎯 Guerrero principal: ${guerreroPrincipal.nombreId}');
       print('📋 Disponibles: ${_guerrerosDisponibles.length}');
     } catch (e) {
@@ -73,6 +264,12 @@ class _SelectAliadosScreenState extends State<SelectAliadosScreen> {
         _cargando = false;
       });
     }
+  }
+
+  @override
+  void dispose() {
+    _onlineSubscription?.cancel();
+    super.dispose();
   }
 
   String _texto(String clave, String fallback) {
@@ -137,6 +334,8 @@ class _SelectAliadosScreenState extends State<SelectAliadosScreen> {
                   ],
                 ),
               )
+              : widget.onlineRoom != null && _onlineSubmitted
+              ? _buildOnlineWaitingScreen()
               : _errorCarga != null
               ? Center(
                 child: Text(
@@ -166,6 +365,102 @@ class _SelectAliadosScreenState extends State<SelectAliadosScreen> {
                   },
                 ),
               ),
+    );
+  }
+
+  Widget _buildOnlineWaitingScreen() {
+    final selectedNames = _seleccionados
+        .map((warrior) => warrior.nombre(_translations))
+        .join(', ');
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Colors.grey[900]!, Colors.grey[700]!],
+        ),
+      ),
+      child: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 520),
+            child: Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.groups_rounded,
+                      color: Color(0xFF172554),
+                      size: 56,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      _onlineText(
+                        'online_team_ready',
+                        'Tu equipo está listo',
+                        'Your team is ready',
+                      ),
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Color(0xFF172554),
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _onlineText(
+                        'online_allies_saved_waiting',
+                        'Tus elecciones están guardadas. La partida comenzará cuando el otro jugador termine.',
+                        'Your choices are saved. The game will start when the other player is done.',
+                      ),
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Color(0xFF5B6475),
+                        height: 1.4,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF3F5F9),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        selectedNames,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Color(0xFF172554),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    const CircularProgressIndicator(color: Color(0xFF172554)),
+                    if (_onlineError != null) ...[
+                      const SizedBox(height: 16),
+                      Text(
+                        _onlineError!,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(color: Color(0xFF9B1C31)),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -254,36 +549,8 @@ class _SelectAliadosScreenState extends State<SelectAliadosScreen> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed:
-                        _completo
-                            ? () {
-                              final guerreroPrincipalId =
-                                  '${widget.civilizacionSeleccionada.id}_001';
-
-                              // 👇 BUSCAR EN LA LISTA COMPLETA (_todosLosGuerreros)
-                              final guerreroPrincipal = _todosLosGuerreros
-                                  .firstWhere(
-                                    (g) => g.id == guerreroPrincipalId,
-                                  );
-
-                              final todosLosGuerreros = [
-                                guerreroPrincipal,
-                                ..._seleccionados,
-                              ];
-
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder:
-                                      (context) => Mitic2Screen(
-                                        civilizacionSeleccionada:
-                                            widget.civilizacionSeleccionada,
-                                        aliadosSeleccionados: todosLosGuerreros,
-                                        selectedLanguage:
-                                            widget.selectedLanguage,
-                                      ),
-                                ),
-                              );
-                            }
+                        _completo && !_onlineSaving
+                            ? _continueWithAllies
                             : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.grey[800],
@@ -294,13 +561,29 @@ class _SelectAliadosScreenState extends State<SelectAliadosScreen> {
                         borderRadius: BorderRadius.circular(30),
                       ),
                     ),
-                    child: Text(
-                      _texto('aliados_siguiente', 'SIGUIENTE'),
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    child:
+                        _onlineSaving
+                            ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                            : Text(
+                              widget.onlineRoom != null
+                                  ? _onlineText(
+                                    'online_ready_button',
+                                    'LISTO',
+                                    'READY',
+                                  )
+                                  : _texto('aliados_siguiente', 'SIGUIENTE'),
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                   ),
                 ),
               ],
@@ -398,35 +681,7 @@ class _SelectAliadosScreenState extends State<SelectAliadosScreen> {
             width: double.infinity,
             child: ElevatedButton(
               onPressed:
-                  _completo
-                      ? () {
-                        final guerreroPrincipalId =
-                            '${widget.civilizacionSeleccionada.id}_001';
-
-                        // 👇 BUSCAR EN LA LISTA COMPLETA (_todosLosGuerreros)
-                        final guerreroPrincipal = _todosLosGuerreros.firstWhere(
-                          (g) => g.id == guerreroPrincipalId,
-                        );
-
-                        final todosLosGuerreros = [
-                          guerreroPrincipal,
-                          ..._seleccionados,
-                        ];
-
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder:
-                                (context) => Mitic2Screen(
-                                  civilizacionSeleccionada:
-                                      widget.civilizacionSeleccionada,
-                                  aliadosSeleccionados: todosLosGuerreros,
-                                  selectedLanguage: widget.selectedLanguage,
-                                ),
-                          ),
-                        );
-                      }
-                      : null,
+                  _completo && !_onlineSaving ? _continueWithAllies : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.grey[800],
                 foregroundColor: Colors.white,
@@ -436,10 +691,29 @@ class _SelectAliadosScreenState extends State<SelectAliadosScreen> {
                   borderRadius: BorderRadius.circular(30),
                 ),
               ),
-              child: Text(
-                _texto('aliados_siguiente', 'SIGUIENTE'),
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
+              child:
+                  _onlineSaving
+                      ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                      : Text(
+                        widget.onlineRoom != null
+                            ? _onlineText(
+                              'online_ready_button',
+                              'LISTO',
+                              'READY',
+                            )
+                            : _texto('aliados_siguiente', 'SIGUIENTE'),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
             ),
           ),
         ),

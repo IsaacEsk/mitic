@@ -13,7 +13,7 @@ class Mitic2DataService {
   // ============================================
   // CARGAR TODOS LOS DATOS NECESARIOS
   // ============================================
-  static Future<Map<String, dynamic>> cargarTodo() async {
+  static Future<Map<String, dynamic>> cargarTodo({String locale = 'es'}) async {
     try {
       // 1. Cargar JSONs
       final guerrerosJson = await rootBundle.loadString(
@@ -22,7 +22,7 @@ class Mitic2DataService {
       final civilizacionesJson = await rootBundle.loadString(
         'assets/data/civilizaciones.json',
       );
-      final translations = await cargarTraducciones('es');
+      final translations = await cargarTraducciones(locale);
 
       // 2. Parsear JSONs
       final List<dynamic> guerrerosList = json.decode(guerrerosJson);

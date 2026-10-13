@@ -6,6 +6,7 @@ class OnlineModeScreen extends StatelessWidget {
   const OnlineModeScreen({super.key, required this.selectedLanguage});
 
   bool get _isEnglish => selectedLanguage == 'en';
+  bool get _isFrench => selectedLanguage == 'fr';
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +15,13 @@ class OnlineModeScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
-        title: Text(_isEnglish ? 'Online multiplayer' : 'Multijugador online'),
+        title: Text(
+          _isEnglish
+              ? 'Online multiplayer'
+              : _isFrench
+              ? 'Multijoueur en ligne'
+              : 'Multijugador online',
+        ),
       ),
       body: Center(
         child: Padding(
@@ -27,6 +34,8 @@ class OnlineModeScreen extends StatelessWidget {
               Text(
                 _isEnglish
                     ? 'Online mode is in progress'
+                    : _isFrench
+                    ? 'Le mode en ligne est en cours de développement'
                     : 'Estamos trabajando en el modo online',
                 textAlign: TextAlign.center,
                 style: const TextStyle(
@@ -39,6 +48,8 @@ class OnlineModeScreen extends StatelessWidget {
               Text(
                 _isEnglish
                     ? 'This feature will be available soon.'
+                    : _isFrench
+                    ? 'Cette fonctionnalité sera bientôt disponible.'
                     : 'Esta función estará disponible próximamente.',
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: Colors.white70, fontSize: 16),
@@ -48,7 +59,11 @@ class OnlineModeScreen extends StatelessWidget {
                 onPressed: () => Navigator.pop(context),
                 icon: const Icon(Icons.arrow_back),
                 label: Text(
-                  _isEnglish ? 'Back to modes' : 'Volver a los modos',
+                  _isEnglish
+                      ? 'Back to modes'
+                      : _isFrench
+                      ? 'Retour aux modes'
+                      : 'Volver a los modos',
                 ),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.amber,

@@ -8,6 +8,7 @@ class GameModeScreen extends StatelessWidget {
   const GameModeScreen({super.key, required this.selectedLanguage});
 
   bool get _isEnglish => selectedLanguage == 'en';
+  bool get _isFrench => selectedLanguage == 'fr';
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +26,11 @@ class GameModeScreen extends StatelessWidget {
                   const Text('⚔️', style: TextStyle(fontSize: 64)),
                   const SizedBox(height: 20),
                   Text(
-                    _isEnglish ? 'Choose a game mode' : 'Elige un modo de juego',
+                    _isEnglish
+                        ? 'Choose a game mode'
+                        : _isFrench
+                        ? 'Choisissez un mode de jeu'
+                        : 'Elige un modo de juego',
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       color: Colors.white,
@@ -36,10 +41,17 @@ class GameModeScreen extends StatelessWidget {
                   const SizedBox(height: 36),
                   _ModeButton(
                     icon: Icons.computer,
-                    title: _isEnglish ? 'Play vs. machine' : 'Jugar contra la máquina',
+                    title:
+                        _isEnglish
+                            ? 'Play vs. machine'
+                            : _isFrench
+                            ? 'Jouer contre la machine'
+                            : 'Jugar contra la máquina',
                     subtitle:
                         _isEnglish
                             ? 'Play a local game against the AI'
+                            : _isFrench
+                            ? 'Jouez une partie locale contre l’IA'
                             : 'Juega una partida local contra la máquina',
                     color: Colors.amber,
                     onPressed: () {
@@ -57,10 +69,17 @@ class GameModeScreen extends StatelessWidget {
                   const SizedBox(height: 16),
                   _ModeButton(
                     icon: Icons.public,
-                    title: _isEnglish ? 'Online multiplayer' : 'Multijugador online',
+                    title:
+                        _isEnglish
+                            ? 'Online multiplayer'
+                            : _isFrench
+                            ? 'Multijoueur en ligne'
+                            : 'Multijugador online',
                     subtitle:
                         _isEnglish
                             ? 'Play with another person'
+                            : _isFrench
+                            ? 'Jouez avec une autre personne'
                             : 'Juega con otra persona',
                     color: Colors.lightBlueAccent,
                     onPressed: () {

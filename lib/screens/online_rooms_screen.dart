@@ -6,6 +6,7 @@ import 'package:mitic/models/online_room.dart';
 import 'package:mitic/screens/online_match_screen.dart';
 import 'package:mitic/services/online_rooms_service.dart';
 import 'package:mitic/services/realtime_database_service.dart';
+import 'package:mitic/services/translationService.dart';
 
 class OnlineRoomsScreen extends StatefulWidget {
   final String selectedLanguage;
@@ -22,16 +23,31 @@ class _OnlineRoomsScreenState extends State<OnlineRoomsScreen> {
   static const _mutedText = Color(0xFF5B6475);
 
   late final Future<User> _userFuture;
+  Map<String, String> _translations = {};
   bool _creatingRoom = false;
   String? _joiningRoomId;
   String? _errorMessage;
 
   bool get _isEnglish => widget.selectedLanguage == 'en';
 
+  String _text(String key, String spanish, String english) =>
+      _translations[key] ?? (_isEnglish ? english : spanish);
+
+  String _roomTitle(String roomId) => _text(
+    'online_room_title',
+    'Sala {id}',
+    'Room {id}',
+  ).replaceAll('{id}', roomId);
+
   @override
   void initState() {
     super.initState();
     _userFuture = RealtimeDatabaseService.ensureSignedIn();
+    TranslationService.loadTranslations(widget.selectedLanguage).then((
+      translations,
+    ) {
+      if (mounted) setState(() => _translations = translations);
+    });
   }
 
   Future<void> _createRoom(User user) async {
@@ -64,9 +80,11 @@ class _OnlineRoomsScreenState extends State<OnlineRoomsScreen> {
       if (!mounted) return;
       if (!joined) {
         _showError(
-          _isEnglish
-              ? 'That room is no longer available.'
-              : 'Esa sala ya no está disponible.',
+          _text(
+            'online_room_unavailable',
+            'Esa sala ya no está disponible.',
+            'That room is no longer available.',
+          ),
         );
         return;
       }
@@ -107,7 +125,9 @@ class _OnlineRoomsScreenState extends State<OnlineRoomsScreen> {
     return Scaffold(
       backgroundColor: _pageBackground,
       appBar: AppBar(
-        title: Text(_isEnglish ? 'Online rooms' : 'Salas online'),
+        title: Text(
+          _text('online_rooms_title', 'Salas online', 'Online rooms'),
+        ),
         backgroundColor: _navy,
         foregroundColor: Colors.white,
       ),
@@ -116,9 +136,11 @@ class _OnlineRoomsScreenState extends State<OnlineRoomsScreen> {
         builder: (context, userSnapshot) {
           if (userSnapshot.hasError) {
             return _buildMessage(
-              _isEnglish
-                  ? 'Could not connect to Firebase Authentication.'
-                  : 'No se pudo conectar con Firebase Authentication.',
+              _text(
+                'online_auth_error',
+                'No se pudo conectar con Firebase Authentication.',
+                'Could not connect to Firebase Authentication.',
+              ),
               details: userSnapshot.error.toString(),
               icon: Icons.cloud_off_outlined,
             );
@@ -147,7 +169,11 @@ class _OnlineRoomsScreenState extends State<OnlineRoomsScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            _isEnglish ? 'Play together' : 'Juega con alguien',
+                            _text(
+                              'online_play_together',
+                              'Juega con alguien',
+                              'Play together',
+                            ),
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 20,
@@ -156,9 +182,11 @@ class _OnlineRoomsScreenState extends State<OnlineRoomsScreen> {
                           ),
                           const SizedBox(height: 5),
                           Text(
-                            _isEnglish
-                                ? 'Create a room or join an open game.'
-                                : 'Crea una sala o únete a una partida abierta.',
+                            _text(
+                              'online_create_or_join_hint',
+                              'Crea una sala o únete a una partida abierta.',
+                              'Create a room or join an open game.',
+                            ),
                             style: const TextStyle(
                               color: Color(0xFFE0E7FF),
                               fontSize: 14,
@@ -185,7 +213,11 @@ class _OnlineRoomsScreenState extends State<OnlineRoomsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        _isEnglish ? 'Start a game' : 'Inicia una partida',
+                        _text(
+                          'online_start_game',
+                          'Inicia una partida',
+                          'Start a game',
+                        ),
                         style: const TextStyle(
                           color: _navy,
                           fontSize: 17,
@@ -194,9 +226,11 @@ class _OnlineRoomsScreenState extends State<OnlineRoomsScreen> {
                       ),
                       const SizedBox(height: 5),
                       Text(
-                        _isEnglish
-                            ? 'Create a room and wait for another player.'
-                            : 'Crea una sala y espera a que se una otro jugador.',
+                        _text(
+                          'online_create_room_wait',
+                          'Crea una sala y espera a que se una otro jugador.',
+                          'Create a room and wait for another player.',
+                        ),
                         style: const TextStyle(color: _mutedText, fontSize: 14),
                       ),
                       const SizedBox(height: 16),
@@ -218,8 +252,16 @@ class _OnlineRoomsScreenState extends State<OnlineRoomsScreen> {
                                   : const Icon(Icons.add),
                           label: Text(
                             _creatingRoom
-                                ? (_isEnglish ? 'Creating...' : 'Creando...')
-                                : (_isEnglish ? 'Create room' : 'Crear sala'),
+                                ? _text(
+                                  'online_creating_room',
+                                  'Creando...',
+                                  'Creating...',
+                                )
+                                : _text(
+                                  'online_create_room',
+                                  'Crear sala',
+                                  'Create room',
+                                ),
                           ),
                           style: FilledButton.styleFrom(
                             backgroundColor: const Color(0xFFFFC857),
@@ -251,7 +293,11 @@ class _OnlineRoomsScreenState extends State<OnlineRoomsScreen> {
                   const Icon(Icons.meeting_room_outlined, color: _navy),
                   const SizedBox(width: 8),
                   Text(
-                    _isEnglish ? 'Available rooms' : 'Salas disponibles',
+                    _text(
+                      'online_available_rooms',
+                      'Salas disponibles',
+                      'Available rooms',
+                    ),
                     style: const TextStyle(
                       color: _navy,
                       fontSize: 19,
@@ -266,9 +312,11 @@ class _OnlineRoomsScreenState extends State<OnlineRoomsScreen> {
                 builder: (context, roomsSnapshot) {
                   if (roomsSnapshot.hasError) {
                     return _buildMessage(
-                      _isEnglish
-                          ? 'Could not load rooms from Realtime Database.'
-                          : 'No se pudieron cargar las salas de Realtime Database.',
+                      _text(
+                        'online_database_error',
+                        'No se pudieron cargar las salas de Realtime Database.',
+                        'Could not load rooms from Realtime Database.',
+                      ),
                       details: roomsSnapshot.error.toString(),
                       icon: Icons.cloud_off_outlined,
                     );
@@ -285,13 +333,16 @@ class _OnlineRoomsScreenState extends State<OnlineRoomsScreen> {
                   final rooms = roomsSnapshot.data!;
                   if (rooms.isEmpty) {
                     return _buildMessage(
-                      _isEnglish
-                          ? 'No open rooms yet.'
-                          : 'Todavía no hay salas abiertas.',
-                      subtitle:
-                          _isEnglish
-                              ? 'Create a room and it will appear here for other players.'
-                              : 'Crea una sala y aparecerá aquí para que otros puedan unirse.',
+                      _text(
+                        'online_no_open_rooms',
+                        'Todavía no hay salas abiertas.',
+                        'No open rooms yet.',
+                      ),
+                      subtitle: _text(
+                        'online_empty_rooms_hint',
+                        'Crea una sala y aparecerá aquí para que otros puedan unirse.',
+                        'Create a room and it will appear here for other players.',
+                      ),
                       icon: Icons.sports_esports_outlined,
                     );
                   }
@@ -330,18 +381,18 @@ class _OnlineRoomsScreenState extends State<OnlineRoomsScreen> {
                                   ),
                                 ),
                                 title: Text(
-                                  _isEnglish
-                                      ? 'Room ${room.id}'
-                                      : 'Sala ${room.id}',
+                                  _roomTitle(room.id),
                                   style: const TextStyle(
                                     color: _navy,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                                 subtitle: Text(
-                                  _isEnglish
-                                      ? 'Waiting for a player'
-                                      : 'Esperando a otro jugador',
+                                  _text(
+                                    'online_room_waiting_status',
+                                    'Esperando a otro jugador',
+                                    'Waiting for a player',
+                                  ),
                                   style: const TextStyle(color: _mutedText),
                                 ),
                                 trailing: FilledButton(
@@ -364,7 +415,11 @@ class _OnlineRoomsScreenState extends State<OnlineRoomsScreen> {
                                             ),
                                           )
                                           : Text(
-                                            _isEnglish ? 'Join' : 'Unirse',
+                                            _text(
+                                              'online_join_room',
+                                              'Unirse',
+                                              'Join',
+                                            ),
                                           ),
                                 ),
                               ),

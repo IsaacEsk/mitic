@@ -1,28 +1,47 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:mitic/screens/SelectAliadosScreen.dart';
+import 'package:mitic/models/online_room.dart';
+import 'package:mitic/models/online_room_setup.dart';
+import 'package:mitic/services/online_rooms_service.dart';
 import '../services/mitic2_data_service.dart';
 import '../models/civilizacion_model.dart';
 import '../models/guerrero_model.dart';
 
 class SelectCivScreen extends StatefulWidget {
   final String selectedLanguage; // 👈 NUEVO: recibir el idioma
+  final OnlineRoom? onlineRoom;
+  final String? uid;
 
   const SelectCivScreen({
     super.key,
     required this.selectedLanguage, // 👈 NUEVO
-  });
+    this.onlineRoom,
+    this.uid,
+  }) : assert((onlineRoom == null) == (uid == null));
 
   @override
   State<SelectCivScreen> createState() => _SelectCivScreenState();
 }
 
 class _SelectCivScreenState extends State<SelectCivScreen> {
+  bool get _isEnglish => widget.selectedLanguage == 'en';
+
+  String _onlineText(String key, String spanish, String english) =>
+      _translations[key] ?? (_isEnglish ? english : spanish);
+
   List<Civilizacion> _civilizaciones = [];
   Map<String, Guerrero> _guerreros = {};
   Map<String, String> _translations = {};
   bool _cargando = true;
-  bool _imagenesListas = false;
   String _mensajeCarga = '';
+  StreamSubscription<OnlineRoomSetup>? _onlineSubscription;
+  OnlineRoomSetup? _onlineSetup;
+  String? _onlineCivilizationId;
+  String? _onlineError;
+  bool _onlineSaving = false;
+  bool _openingOnlineAllies = false;
 
   @override
   void initState() {
@@ -32,7 +51,134 @@ class _SelectCivScreenState extends State<SelectCivScreen> {
       'Cargando datos...',
       'Loading data...',
     );
+    if (widget.onlineRoom != null) _listenForOnlineSetup();
     _cargarDatos();
+  }
+
+  void _listenForOnlineSetup() {
+    final room = widget.onlineRoom!;
+    _onlineSubscription = OnlineRoomsService.watchSetup(room.id).listen(
+      (setup) {
+        if (!mounted) return;
+        final uid = widget.uid!;
+        if (setup.guestUid == null ||
+            (uid != room.hostUid && setup.guestUid != uid)) {
+          Navigator.pop(context);
+          return;
+        }
+        final role =
+            uid == room.hostUid
+                ? 'host'
+                : uid == room.guestUid
+                ? 'guest'
+                : null;
+        if (role == null) {
+          setState(
+            () =>
+                _onlineError = _onlineText(
+                  'online_player_not_in_room',
+                  'El jugador no pertenece a esta sala.',
+                  'This player does not belong to this room.',
+                ),
+          );
+          return;
+        }
+
+        setState(() {
+          _onlineSetup = setup;
+          _onlineCivilizationId = setup.playerForRole(role).civilizationId;
+          _onlineError = null;
+        });
+        _continueOnlineSelection();
+      },
+      onError: (Object error) {
+        if (mounted) setState(() => _onlineError = error.toString());
+      },
+    );
+  }
+
+  void _continueOnlineSelection() {
+    if (_openingOnlineAllies ||
+        _cargando ||
+        !(_onlineSetup?.bothCivilizationsSelected ?? false)) {
+      return;
+    }
+    final civilizationId = _onlineCivilizationId;
+    if (civilizationId == null) return;
+
+    Civilizacion? selectedCivilization;
+    for (final civilization in _civilizaciones) {
+      if (civilization.id == civilizationId) {
+        selectedCivilization = civilization;
+        break;
+      }
+    }
+    if (selectedCivilization == null) {
+      setState(() {
+        _onlineError = _onlineText(
+          'online_civilization_not_found',
+          'La civilización seleccionada no existe en los datos del juego.',
+          'The selected civilization is missing from the game data.',
+        );
+      });
+      return;
+    }
+
+    _openingOnlineAllies = true;
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => SelectAliadosScreen(
+              civilizacionSeleccionada: selectedCivilization!,
+              selectedLanguage: widget.selectedLanguage,
+              onlineRoom: widget.onlineRoom,
+              uid: widget.uid,
+            ),
+      ),
+    );
+  }
+
+  Future<void> _selectCivilization(Civilizacion civilization) async {
+    if (widget.onlineRoom == null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder:
+              (context) => SelectAliadosScreen(
+                civilizacionSeleccionada: civilization,
+                selectedLanguage: widget.selectedLanguage,
+              ),
+        ),
+      );
+      return;
+    }
+    if (_onlineSaving || _onlineCivilizationId != null) return;
+
+    setState(() {
+      _onlineSaving = true;
+      _onlineError = null;
+    });
+    try {
+      await OnlineRoomsService.saveCivilization(
+        room: widget.onlineRoom!,
+        uid: widget.uid!,
+        civilizationId: civilization.id,
+        monumentMaxHealth: civilization.muralla.vida,
+      );
+      if (!mounted) return;
+      setState(() {
+        _onlineCivilizationId = civilization.id;
+        _onlineSaving = false;
+      });
+      _continueOnlineSelection();
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _onlineSaving = false;
+        _onlineError = error.toString();
+      });
+    }
   }
 
   Future<void> _cargarDatos() async {
@@ -50,7 +196,9 @@ class _SelectCivScreenState extends State<SelectCivScreen> {
         );
       });
 
-      final data = await Mitic2DataService.cargarTodo();
+      final data = await Mitic2DataService.cargarTodo(
+        locale: widget.selectedLanguage,
+      );
       final civs = data['civilizaciones'] as Map<String, Civilizacion>;
       final guerrerosBase = data['guerreros'] as Map<String, Guerrero>;
 
@@ -88,9 +236,9 @@ class _SelectCivScreenState extends State<SelectCivScreen> {
       await _precacheAllImages();
 
       setState(() {
-        _imagenesListas = true;
         _cargando = false;
       });
+      _continueOnlineSelection();
     } catch (e) {
       print('❌ Error cargando datos: $e');
       setState(() {
@@ -134,6 +282,12 @@ class _SelectCivScreenState extends State<SelectCivScreen> {
     } catch (e) {
       print('⚠️ Error precargando algunas imágenes: $e');
     }
+  }
+
+  @override
+  void dispose() {
+    _onlineSubscription?.cancel();
+    super.dispose();
   }
 
   @override
@@ -181,7 +335,6 @@ class _SelectCivScreenState extends State<SelectCivScreen> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final double ancho = constraints.maxWidth;
-        final double alto = constraints.maxHeight;
 
         int crossAxisCount = ancho > 900 ? 2 : (ancho > 600 ? 2 : 1);
 
@@ -192,14 +345,40 @@ class _SelectCivScreenState extends State<SelectCivScreen> {
               // Título con traducción 👇
               Container(
                 padding: const EdgeInsets.all(16),
-                child: Text(
-                  titulo,
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 2,
-                  ),
+                child: Column(
+                  children: [
+                    Text(
+                      titulo,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 2,
+                      ),
+                    ),
+                    if (widget.onlineRoom != null &&
+                        (_onlineCivilizationId != null || _onlineSaving)) ...[
+                      const SizedBox(height: 12),
+                      _buildOnlineStatus(
+                        _onlineSaving
+                            ? _onlineText(
+                              'online_saving_civilization',
+                              'Guardando tu elección...',
+                              'Saving your choice...',
+                            )
+                            : _onlineText(
+                              'online_civilization_waiting',
+                              'Civilización seleccionada. Esperando al otro jugador...',
+                              'Civilization selected. Waiting for the other player...',
+                            ),
+                      ),
+                    ],
+                    if (_onlineError != null) ...[
+                      const SizedBox(height: 12),
+                      _buildOnlineError(_onlineError!),
+                    ],
+                  ],
                 ),
               ),
               const SizedBox(height: 20),
@@ -216,7 +395,13 @@ class _SelectCivScreenState extends State<SelectCivScreen> {
                   itemBuilder: (context, index) {
                     final civ = _civilizaciones[index];
                     final guerreroPrincipal = _guerreros['${civ.id}_001'];
-                    return _buildCivCard(civ, guerreroPrincipal);
+                    return _buildCivCard(
+                      civ,
+                      guerreroPrincipal,
+                      enabled:
+                          widget.onlineRoom == null ||
+                          (_onlineCivilizationId == null && !_onlineSaving),
+                    );
                   },
                 ),
               ),
@@ -227,24 +412,57 @@ class _SelectCivScreenState extends State<SelectCivScreen> {
     );
   }
 
-  Widget _buildCivCard(Civilizacion civ, Guerrero? guerrero) {
+  Widget _buildOnlineStatus(String message) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.blueGrey[800],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.amber.withValues(alpha: 0.7)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.hourglass_top, color: Colors.amber),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(message, style: const TextStyle(color: Colors.white)),
+          ),
+          if (_onlineSaving)
+            const SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: Colors.amber,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOnlineError(String message) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.red[900],
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(message, style: const TextStyle(color: Colors.white)),
+    );
+  }
+
+  Widget _buildCivCard(
+    Civilizacion civ,
+    Guerrero? guerrero, {
+    required bool enabled,
+  }) {
     final civNombre = _translations[civ.nombreId] ?? civ.nombreId;
 
     return GestureDetector(
-      onTap: () {
-        print('🎮 Civilización seleccionada: $civNombre');
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder:
-                (context) => SelectAliadosScreen(
-                  civilizacionSeleccionada: civ,
-                  // 👇 PASAR EL IDIOMA A LA SIGUIENTE PANTALLA
-                  selectedLanguage: widget.selectedLanguage,
-                ),
-          ),
-        );
-      },
+      onTap: enabled ? () => _selectCivilization(civ) : null,
       child: LayoutBuilder(
         builder: (context, constraints) {
           final double cardHeight = constraints.maxHeight;
@@ -357,16 +575,6 @@ class _SelectCivScreenState extends State<SelectCivScreen> {
                           maxLines: 4,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        // SizedBox(height: cardHeight * 0.015),
-                        // Text(
-                        //   '${_translations['habilidad_especial'] ?? 'Habilidad especial'}: ${_translations[civ.habilidadEspecialId] ?? civ.habilidadEspecialId}',
-                        //   style: TextStyle(
-                        //     color: Colors.amber[200],
-                        //     fontSize: fontSizeDesc,
-                        //   ),
-                        //   maxLines: 2,
-                        //   overflow: TextOverflow.ellipsis,
-                        // ),
                         if (guerrero != null) ...[
                           SizedBox(height: cardHeight * 0.03),
                           const Divider(color: Colors.black54, height: 1),

@@ -18,7 +18,7 @@ import 'package:mitic/models/monument_model.dart';
 import 'package:mitic/models/tablero.dart';
 import 'package:mitic/models/torre_campo.dart';
 import 'package:mitic/models/torre_model.dart';
-import 'package:mitic/screens/selectCivScreen.dart';
+import 'package:mitic/screens/game_mode_screen.dart';
 import 'package:mitic/services/mitic2_data_service.dart';
 import 'package:mitic/widgets/aldeano_tablero.dart';
 import 'package:mitic/widgets/cultivo_tablero.dart';
@@ -87,7 +87,9 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
     _contadorEpidemia = Random().nextInt(11) + 5;
 
     // 1. CARGAR DATOS (incluyendo traducciones)
-    final datos = await Mitic2DataService.cargarTodo();
+    final datos = await Mitic2DataService.cargarTodo(
+      locale: widget.selectedLanguage,
+    );
     final guerrerosBase = datos['guerreros'] as Map<String, Guerrero>;
     final civilizaciones = datos['civilizaciones'] as Map<String, Civilizacion>;
     final translations = await Mitic2DataService.cargarTraducciones(
@@ -123,7 +125,7 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
       civilizacion: miCivilizacion,
       guerrerosSeleccionados: misGuerrerosTraducidos,
       monumentoEnCampo: MonumentField.fromCivilizacion(miCivilizacion),
-      puntosAcumulados: 2000,
+      puntosAcumulados: 0,
       turno: 0,
       esEnemigo: false,
     );
@@ -210,7 +212,9 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
   }
 
   Future<void> _cargarDatos() async {
-    final datos = await Mitic2DataService.cargarTodo();
+    final datos = await Mitic2DataService.cargarTodo(
+      locale: widget.selectedLanguage,
+    );
     final torresData = await Mitic2DataService.cargarTorres();
     final hospitalesData = await Mitic2DataService.cargarHospitales();
     final cultivosData = await Mitic2DataService.cargarCultivos();
@@ -5305,191 +5309,209 @@ class _Mitic2ScreenState extends State<Mitic2Screen> {
   }
 
   void _mostrarModalVictoria(Jugador2 ganador) {
+    if (_juegoTerminado) return;
     _juegoTerminado = true; // 👈 MARCA QUE EL JUEGO TERMINÓ
 
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          child: Container(
-            width: 350,
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Colors.amber[800]!, Colors.brown[900]!],
-              ),
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: Colors.amber, width: 4),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.6),
-                  blurRadius: 15,
-                  offset: const Offset(0, 8),
+        final ganadorLabel = _t(
+          ganador == juego.jugadores[0] ? 'jugador_usuario' : 'jugador_ia',
+          ganador == juego.jugadores[0] ? 'Jugador 1' : 'IA',
+        );
+        return PopScope(
+          canPop: false,
+          child: Dialog(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            child: Container(
+              width: 350,
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Colors.amber[800]!, Colors.brown[900]!],
                 ),
-              ],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Trofeo
-                const Icon(Icons.emoji_events, color: Colors.amber, size: 64),
-                const SizedBox(height: 16),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: Colors.amber, width: 4),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.6),
+                    blurRadius: 15,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Trofeo
+                  const Icon(Icons.emoji_events, color: Colors.amber, size: 64),
+                  const SizedBox(height: 16),
 
-                // Texto de victoria
-                Text(
-                  _t('victoria_titulo', '🏆 ¡VICTORIA! 🏆'),
-                  style: const TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black45,
-                        blurRadius: 4,
-                        offset: Offset(2, 2),
+                  // Texto de victoria
+                  Text(
+                    _t('victoria_titulo', '🏆 ¡VICTORIA! 🏆'),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black45,
+                          blurRadius: 4,
+                          offset: Offset(2, 2),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    _t(
+                      'victoria_ganador',
+                      'Ganador: {player}',
+                    ).replaceAll('{player}', ganadorLabel),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Civilización ganadora
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.brown[800],
+                      borderRadius: BorderRadius.circular(30),
+                      border: Border.all(color: Colors.amber, width: 2),
+                    ),
+                    child: Text(
+                      _translations[ganador.civilizacion.nombreId] ??
+                          ganador.civilizacion.nombreId,
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.amber,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Guerrero principal y monumento
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      // Guerrero principal
+                      Column(
+                        children: [
+                          Container(
+                            width: 80,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              color: Colors.brown[300],
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.amber, width: 2),
+                              image: DecorationImage(
+                                image: AssetImage(
+                                  ganador.guerrerosSeleccionados.first.imagen,
+                                ),
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            ganador.guerrerosSeleccionados.first.nombreId,
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 10,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      // VS
+                      const Text(
+                        '⚡',
+                        style: TextStyle(color: Colors.amber, fontSize: 30),
+                      ),
+
+                      // Monumento
+                      Column(
+                        children: [
+                          Container(
+                            width: 80,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              color: Colors.brown[300],
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.amber, width: 2),
+                              image: DecorationImage(
+                                image: AssetImage(
+                                  ganador.monumentoEnCampo.imagenPath,
+                                ),
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            _translations[ganador.monumentoEnCampo.nombre] ??
+                                ganador.monumentoEnCampo.nombre,
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 10,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ),
-                const SizedBox(height: 16),
+                  const SizedBox(height: 24),
 
-                // Civilización ganadora
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 10,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.brown[800],
-                    borderRadius: BorderRadius.circular(30),
-                    border: Border.all(color: Colors.amber, width: 2),
-                  ),
-                  child: Text(
-                    _translations[ganador.civilizacion.nombreId] ??
-                        ganador.civilizacion.nombreId,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.amber,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                // Guerrero principal y monumento
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    // Guerrero principal
-                    Column(
-                      children: [
-                        Container(
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            color: Colors.brown[300],
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.amber, width: 2),
-                            image: DecorationImage(
-                              image: AssetImage(
-                                ganador.guerrerosSeleccionados.first.imagen,
+                  // Volver al selector de modo de juego.
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(
+                          builder:
+                              (context) => GameModeScreen(
+                                selectedLanguage: widget.selectedLanguage,
                               ),
-                              fit: BoxFit.cover,
-                            ),
-                          ),
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          ganador.guerrerosSeleccionados.first.nombreId,
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 10,
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    // VS
-                    const Text(
-                      '⚡',
-                      style: TextStyle(color: Colors.amber, fontSize: 30),
-                    ),
-
-                    // Monumento
-                    Column(
-                      children: [
-                        Container(
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            color: Colors.brown[300],
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.amber, width: 2),
-                            image: DecorationImage(
-                              image: AssetImage(
-                                ganador.monumentoEnCampo.imagenPath,
-                              ),
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          _translations[ganador.monumentoEnCampo.nombre] ??
-                              ganador.monumentoEnCampo.nombre,
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 10,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-
-                // Botón para reiniciar
-                ElevatedButton(
-                  onPressed: () {
-                    // 1. Cerrar el modal de victoria
-                    Navigator.pop(context);
-
-                    // 2. Reemplazar la pantalla actual con una nueva instancia de Mitic2Screen
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (context) => SelectCivScreen(
-                              selectedLanguage: widget.selectedLanguage,
-                            ),
+                        (route) => false,
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.amber,
+                      foregroundColor: Colors.brown[900],
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 40,
+                        vertical: 12,
                       ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.amber,
-                    foregroundColor: Colors.brown[900],
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 40,
-                      vertical: 12,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
                     ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                  ),
-                  child: Text(
-                    _t('reiniciar_partida', 'REINICIAR PARTIDA'),
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
+                    child: Text(
+                      _t('victoria_salir', 'SALIR'),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );

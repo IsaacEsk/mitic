@@ -47,7 +47,7 @@ class _LanguageScreenState extends State<LanguageScreen> {
               ),
               const SizedBox(height: 10),
               const Text(
-                'Elige tu idioma / Choose your language',
+                'Elige tu idioma / Choose your language / Choisissez votre langue',
                 style: TextStyle(color: Colors.grey, fontSize: 16),
               ),
               const SizedBox(height: 60),
@@ -68,12 +68,19 @@ class _LanguageScreenState extends State<LanguageScreen> {
                 code: 'en',
                 isSelected: _selectedLanguage == 'en',
               ),
+              const SizedBox(height: 20),
+              _buildLanguageButton(
+                flag: '🇫🇷',
+                language: 'Français',
+                code: 'fr',
+                isSelected: _selectedLanguage == 'fr',
+              ),
 
               const Spacer(),
 
               // Texto pequeño de créditos o información
               const Text(
-                'Selecciona un idioma para continuar',
+                'Selecciona un idioma / Select a language / Choisissez une langue',
                 style: TextStyle(color: Colors.grey, fontSize: 12),
               ),
             ],

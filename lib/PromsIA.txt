@@ -1,0 +1,69 @@
+~Mejoras Online, perdir que el jugador escriba su nombre para que no diga jugador 1 y jugador 2 
+~Si alguien cierra la app o el navegador a la brava la sala se queda abierta 
+~Podriamos tambien ponerle nombre a la sala
+~comenzar a implementar musica de fondo o musica con los ataques, para hacerlo mas restrospectivo. 
+
+
+Trabajar en el "How to play"
+Zona de ideas:
+
+~Desaparecer el boton de "Pasar" hatsa que el jugador haga una mejora.
+~Hacer que los modales sean iguales al modo offline
+~
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~  Despues de accion pasar ~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Despues de que el usuario presione el boton pasar, hay que desaparecerlo como normalmente lo hacemos en el turno del oponente, el oponente obtendra un 6 y 6 en los dados, hay que mostrar el modal de los dados como lo hacemos en el offline y sumar los puntos a los puntos acumulados del rival, acto seguido vamos a hacer que el rival ponga cuatro cultivos, justo a los lados del monumemento, quedando de la siguiente manera el tablero 
+
+C C M C C
+V V V V V 
+V V V V V 
+V V V V V
+
+Donde: 
+C = cultivo 
+M = monumento 
+V = Vacio 
+
+Despues de eso, el rival terminara su turno. 
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~  Segundo turno del jugador ~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Aparecemos el modal con los dados 6 y 5 y los sumamos a nuestros puntos de invocacion, ya un modal normal sin explicacion como el del offline. 
+
+
+Dialogo: Continua plantando cultivos para incrementar tu produccion de puntos. selecciona las casillas vacias y planta un par mas de cultivos, desaparecemos el modal o el dialogo cuando el usuario de clic en el boton "entendido" (en este punto habilitamos dos casillas y cuando el usuario las presione, solo veremos el modal de invocacion y la opcion de plantar un cultivo), 
+
+cuando el usuario haya plantado los dos cultivos, apareceremos otro dialogo.
+
+Dialogo: No solo puedes mejorar la vida de tus cultivos con tus puntos de invocacion. tambien los aldeanos pueden reconstruirlos para que sean mas fuertes. invoca un aldeano para que cada turno reconstruya tus cultivos y tus monumentos. (Desaparecer el modal cuando presionemos el boton "Entendido")
+habilitamos la casilla frnte al monumento con el boton de agregar, pero en este caso cuando el usuario lo presione, aparecemos el modal de invocacion solo con la opcion del aldeano, para que el usuario lo invoque. 
+
+El tablero debe verse masomenos de la siguiente manera: 
+
+V V V V V 
+V V V V V 
+V V A V V
+V C M C C
+
+despues de que el usuario invoque a el aldeano vamos a mostrar el siguente dialogo: 
+
+Dialogo: Los aldeanos reparan edificios y cultivos con su poder de reconstruccion. (emoji martillo)  cada inicio de turno reparan todos los edificios y cultivos que se encuentren en su fila y su columna. (boton de entendido)
+
+Dialogo 2: mueve tus aldeanos a la posicion mas conveniente para ti, para hacerlo, da clic en el aldeano y selecciona la opcion de mover. (Boton de entendido)
+
+Cuando dejamos que el usuario haga clic en el aldeano, y aparecemos el modal del aldeano como en el modo offline. Cuando el jugador haga clic en la opcion mover, me gustaria que despues haga clic en una casilla especifica, para que vea como va a funcionar, esa casilla quiero que sea la que esta al lado del cultivo. 
+
+
+~Rival invoca torre, explicarle al jugador que las torres atacan al inicio de cada turno. 
+
+~hacer que el jugador ponga un hospital para protegerce de la torre
+
+~Mostrarle al jugador como cura el hospital a los aldeanos y a los guerreros (esperar a que tenga un guerrero) 
+
+~aqui el 

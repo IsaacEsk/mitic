@@ -79,44 +79,56 @@ class TorreTablero extends StatelessWidget {
                       bottom: Radius.circular(12),
                     ),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      Row(
-                        children: [
-                          Text('🏹', style: TextStyle(fontSize: statIconSize)),
-                          const SizedBox(width: 2),
-                          Text(
-                            '${torre.ataqueActual}',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: _calcularFontSize(
-                                torre.ataqueActual,
-                                statHeight,
-                              ),
-                              fontWeight: FontWeight.bold,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '🏹',
+                              style: TextStyle(fontSize: statIconSize),
                             ),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          Text('🏰', style: TextStyle(fontSize: statIconSize)),
-                          const SizedBox(width: 2),
-                          Text(
-                            '${torre.vidaActual}',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: _calcularFontSize(
-                                torre.vidaActual,
-                                statHeight,
+                            const SizedBox(width: 2),
+                            Text(
+                              '${torre.ataqueActual}',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: _calcularFontSize(
+                                  torre.ataqueActual,
+                                  statHeight,
+                                ),
+                                fontWeight: FontWeight.bold,
                               ),
-                              fontWeight: FontWeight.bold,
                             ),
-                          ),
-                        ],
-                      ),
-                    ],
+                          ],
+                        ),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '🏰',
+                              style: TextStyle(fontSize: statIconSize),
+                            ),
+                            const SizedBox(width: 2),
+                            Text(
+                              '${torre.vidaActual}',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: _calcularFontSize(
+                                  torre.vidaActual,
+                                  statHeight,
+                                ),
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

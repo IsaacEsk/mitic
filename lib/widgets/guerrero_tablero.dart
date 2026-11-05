@@ -18,7 +18,6 @@ class GuerreroTablero extends StatelessWidget {
     final double imagenSize = ladoCelda * 0.9;
     final double margenSuperior = (ladoCelda - imagenSize) / 2;
     final double statHeight = ladoCelda * 0.25;
-    final double statIconSize = statHeight * 0.7;
 
     return GestureDetector(
       onTap: onTap,
@@ -75,44 +74,50 @@ class GuerreroTablero extends StatelessWidget {
                       bottom: Radius.circular(12),
                     ),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      Row(
-                        children: [
-                          const Text('⚔️', style: TextStyle(fontSize: 12)),
-                          const SizedBox(width: 2),
-                          Text(
-                            '${guerrero.ataqueActual}',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: _calcularFontSize(
-                                guerrero.ataqueActual,
-                                statHeight,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text('⚔️', style: TextStyle(fontSize: 12)),
+                            const SizedBox(width: 2),
+                            Text(
+                              '${guerrero.ataqueActual}',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: _calcularFontSize(
+                                  guerrero.ataqueActual,
+                                  statHeight,
+                                ),
+                                fontWeight: FontWeight.bold,
                               ),
-                              fontWeight: FontWeight.bold,
                             ),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          const Text('❤️', style: TextStyle(fontSize: 12)),
-                          const SizedBox(width: 2),
-                          Text(
-                            '${guerrero.vidaActual}',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: _calcularFontSize(
-                                guerrero.vidaActual,
-                                statHeight,
+                          ],
+                        ),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text('❤️', style: TextStyle(fontSize: 12)),
+                            const SizedBox(width: 2),
+                            Text(
+                              '${guerrero.vidaActual}',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: _calcularFontSize(
+                                  guerrero.vidaActual,
+                                  statHeight,
+                                ),
+                                fontWeight: FontWeight.bold,
                               ),
-                              fontWeight: FontWeight.bold,
                             ),
-                          ),
-                        ],
-                      ),
-                    ],
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
